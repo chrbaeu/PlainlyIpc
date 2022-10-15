@@ -1,16 +1,17 @@
-﻿using System;
+﻿using PlainlyIpc.Interfaces;
+using System;
 using System.IO;
 using System.IO.Pipes;
 using System.Threading.Tasks;
 
 namespace PlainlyIpc.NamedPipe;
 
-public class NamedPipeClient : IDisposable
+public class NamedPipeClient : IDataSender, IDisposable
 {
     private readonly NamedPipeClientStream client;
 
     public string NamedPipeName { get; }
-    public bool IsConnected { get; private set; }
+    public bool IsConnected => client.IsConnected;
 
     public NamedPipeClient(string namedPipeName)
     {
@@ -18,7 +19,7 @@ public class NamedPipeClient : IDisposable
         client = new(namedPipeName);
     }
 
-    public void Connect(int connectionTimeout = 500)
+    public void Connect(int connectionTimeout = 1000)
     {
         if (IsConnected) { return; }
         if (connectionTimeout <= 0)
@@ -29,15 +30,13 @@ public class NamedPipeClient : IDisposable
         {
             client.Connect(connectionTimeout);
         }
-        if (client.IsConnected)
+        if (!IsConnected)
         {
-            IsConnected = true;
-            return;
+            throw new IOException($"Connecting to named pipe '{NamedPipeName}' failed!");
         }
-        throw new IOException($"Connecting to named pipe '{NamedPipeName}' failed!");
     }
 
-    public async Task ConnectAsync(int connectionTimeout = 0)
+    public async Task ConnectAsync(int connectionTimeout = 1000)
     {
         if (IsConnected) { return; }
         if (connectionTimeout <= 0)
@@ -48,12 +47,10 @@ public class NamedPipeClient : IDisposable
         {
             await client.ConnectAsync(connectionTimeout);
         }
-        if (client.IsConnected)
+        if (!IsConnected)
         {
-            IsConnected = true;
-            return;
+            throw new IOException($"Connecting to named pipe '{NamedPipeName}' failed!");
         }
-        throw new IOException($"Connecting to named pipe '{NamedPipeName}' failed!");
     }
 
     public void Send(byte[] data)
@@ -66,14 +63,24 @@ public class NamedPipeClient : IDisposable
     public async Task SendAsync(byte[] data)
     {
         if (!IsConnected) { throw new InvalidOperationException($"{nameof(NamedPipeClient)} must be connected to send data!"); }
+#if NET6_0_OR_GREATER
+        await client.WriteAsync(BitConverter.GetBytes(data.Length));
+        await client.WriteAsync(data);
+#else
         await client.WriteAsync(BitConverter.GetBytes(data.Length), 0, 4);
         await client.WriteAsync(data, 0, data.Length);
+#endif
     }
 
     public void Dispose()
     {
-        IsConnected = false;
+        if (client.IsConnected)
+        {
+            client.Write(BitConverter.GetBytes(-1), 0, 4);
+            client.Flush();
+        }
         client.Dispose();
+        GC.SuppressFinalize(this);
     }
 
 }

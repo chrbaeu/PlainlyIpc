@@ -1,14 +1,17 @@
-﻿using System;
+﻿using PlainlyIpc.Enums;
+using System;
 
 namespace PlainlyIpc.EventArgs;
 
-public class ObjectReceivedEventArgs : System.EventArgs
+public class IpcMessageReceivedEventArgs : System.EventArgs
 {
-    public Type Type { get; }
+    public IpcMessageType MsgType { get; }
     public object? Value { get; }
+    public Type Type { get; }
 
-    public ObjectReceivedEventArgs(Type type, object? value)
+    public IpcMessageReceivedEventArgs(IpcMessageType msgType, object? value, Type type)
     {
+        this.MsgType = msgType;
         this.Type = type;
         this.Value = value;
     }

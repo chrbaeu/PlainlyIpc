@@ -82,4 +82,20 @@ internal static class MemoryStreamExtensions
         return Encoding.UTF8.GetString(utf8Bytes);
     }
 
+    public static byte[] ReadData(this MemoryStream memoryStream, int bytes)
+    {
+        byte[] payloadBytes = new byte[bytes];
+        memoryStream.Read(payloadBytes, 0, bytes);
+        return payloadBytes;
+    }
+
+#if NETSTANDARD
+
+    public static void Write(this MemoryStream memoryStream, ReadOnlySpan<byte> data)
+    {
+        memoryStream.Write(data.ToArray(), 0, data.Length);
+    }
+
+#endif
+
 }

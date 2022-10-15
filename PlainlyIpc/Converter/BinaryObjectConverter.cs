@@ -7,9 +7,8 @@ namespace PlainlyIpc.Converter;
 
 #if NET6_0_OR_GREATER
 #pragma warning disable SYSLIB0011
+[Obsolete("Not recommended for productive use due to security risks.")]
 #endif
-
-//[Obsolete("Not recommended for productive use due to security risks.")]
 public class BinaryObjectConverter : IObjectConverter
 {
     public byte[] Serialize<T>(T? data)
@@ -38,7 +37,6 @@ public class BinaryObjectConverter : IObjectConverter
     }
 
 }
-
 #if NET6_0_OR_GREATER
 #pragma warning restore SYSLIB0011
 #endif
