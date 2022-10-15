@@ -14,7 +14,7 @@ public class NamedPipeServer : IDisposable
     public event EventHandler<DataReceivedEventArgs>? MessageReceived;
 
     public string NamedPipeName { get; }
-    public bool IsListening { get; private set; } = false;
+    public bool IsListening { get; private set; }
 
     public NamedPipeServer(string namedPipeName)
     {

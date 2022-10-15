@@ -1,13 +1,43 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
-		<LangVersion>10.0</LangVersion>
-		<Nullable>enable</Nullable>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <LangVersion>10.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <Deterministic>true</Deterministic>
+    <AnalysisMode>recommended</AnalysisMode>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Title>PlainlyIpc</Title>
+    <PackageId>Chriffizient.PlainlyIpc</PackageId>
+    <Version>0.0.1</Version>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>icon.png</PackageIcon>
+    <Description>A minimalistic, easy-to-use library for interprocess communication (IPC) with .NET.</Description>
+    <PackageTags>IPC NamedPipe TCP</PackageTags>
+    <PackageProjectUrl>https://github.com/chrbaeu/PlainlyIpc</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/chrbaeu/PlainlyIpc</RepositoryUrl>    
+    <Authors>Christian Bäumlisberger</Authors>
+    <Copyright>Christian Bäumlisberger</Copyright>
+    <PathMap>$(MSBuildProjectDirectory)=C:\</PathMap>
+    <EmbedAllSources>true</EmbedAllSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="System.Memory" Version="4.5.5" />
-	</ItemGroup>
+  <ItemGroup>
+    <None Remove="icon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Memory" Version="4.5.5" />
+  </ItemGroup>
 
 </Project>

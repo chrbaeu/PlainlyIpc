@@ -15,4 +15,5 @@ internal static class StreamExtensions
             offset += read;
         }
     }
+
 }
