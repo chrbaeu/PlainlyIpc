@@ -68,8 +68,12 @@ public class NamedPipeClient : IDataSender, IDisposable
     {
         if (client.IsConnected)
         {
-            client.Write(BitConverter.GetBytes(-1), 0, 4);
-            client.Flush();
+            try
+            {
+                client.Write(BitConverter.GetBytes(-1), 0, 4);
+                client.Flush();
+            }
+            catch { }
         }
         client.Dispose();
         GC.SuppressFinalize(this);
