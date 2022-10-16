@@ -1,11 +1,5 @@
-﻿using PlainlyIpc.Enums;
-using PlainlyIpc.Exceptions;
-using PlainlyIpc.Interfaces;
-using PlainlyIpc.Internal;
-using System;
-using System.IO;
+﻿using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace PlainlyIpc.IPC;
 

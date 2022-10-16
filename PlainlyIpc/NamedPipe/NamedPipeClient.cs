@@ -1,8 +1,5 @@
-﻿using PlainlyIpc.Interfaces;
-using System;
-using System.IO;
+﻿using System.IO;
 using System.IO.Pipes;
-using System.Threading.Tasks;
 
 namespace PlainlyIpc.NamedPipe;
 
@@ -63,13 +60,8 @@ public class NamedPipeClient : IDataSender, IDisposable
     public async Task SendAsync(byte[] data)
     {
         if (!IsConnected) { throw new InvalidOperationException($"{nameof(NamedPipeClient)} must be connected to send data!"); }
-#if NET6_0_OR_GREATER
         await client.WriteAsync(BitConverter.GetBytes(data.Length));
         await client.WriteAsync(data);
-#else
-        await client.WriteAsync(BitConverter.GetBytes(data.Length), 0, 4);
-        await client.WriteAsync(data, 0, data.Length);
-#endif
     }
 
     public void Dispose()

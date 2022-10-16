@@ -1,0 +1,10 @@
+﻿global using PlainlyIpc.Enums;
+global using PlainlyIpc.EventArgs;
+global using PlainlyIpc.Exceptions;
+global using PlainlyIpc.Interfaces;
+global using PlainlyIpc.Internal;
+global using System;
+global using System.Collections.Generic;
+global using System.Linq;
+global using System.Text;
+global using System.Threading.Tasks;

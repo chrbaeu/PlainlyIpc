@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PlainlyIpc.Interfaces;
+﻿namespace PlainlyIpc.Interfaces;
 
 public interface IObjectConverter
 {

@@ -1,7 +1,4 @@
-﻿using PlainlyIpc.Enums;
-using System;
-
-namespace PlainlyIpc.EventArgs;
+﻿namespace PlainlyIpc.EventArgs;
 
 public class IpcMessageReceivedEventArgs : System.EventArgs
 {

@@ -1,10 +1,4 @@
-﻿using PlainlyIpc.Enums;
-using PlainlyIpc.EventArgs;
-using PlainlyIpc.Interfaces;
-using PlainlyIpc.Internal;
-using System;
-using System.IO;
-using System.Text;
+﻿using System.IO;
 
 namespace PlainlyIpc.IPC;
 

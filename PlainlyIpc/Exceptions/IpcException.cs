@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PlainlyIpc.Exceptions;
+﻿namespace PlainlyIpc.Exceptions;
 public class IpcException : Exception
 {
     public IpcException(string message) : base(message) { }

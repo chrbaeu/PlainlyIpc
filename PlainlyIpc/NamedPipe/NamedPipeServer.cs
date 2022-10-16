@@ -1,10 +1,5 @@
-﻿using PlainlyIpc.EventArgs;
-using PlainlyIpc.Interfaces;
-using PlainlyIpc.Internal;
-using System;
-using System.IO.Pipes;
+﻿using System.IO.Pipes;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace PlainlyIpc.NamedPipe;
 

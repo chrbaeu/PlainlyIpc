@@ -23,7 +23,9 @@ public class ConverterTests
     [Fact]
     public void BinaryObjectConverter_BaseTest()
     {
+#pragma warning disable CS0618
         BinaryObjectConverter converter = new();
+#pragma warning restore CS0618
         ObjectSerializationDeserializationBaseTest(converter, testText);
         ObjectSerializationDeserializationBaseTest(converter, testDataModel);
     }
@@ -31,7 +33,9 @@ public class ConverterTests
     [Fact]
     public void BinaryObjectConverter_DictionaryTest()
     {
+#pragma warning disable CS0618
         BinaryObjectConverter converter = new();
+#pragma warning restore CS0618
         byte[] serialized = converter.Serialize(testDict);
         Dictionary<string, long>? deserialized = converter.Deserialize<Dictionary<string, long>>(serialized);
         deserialized.Should().BeEquivalentTo(testDict);

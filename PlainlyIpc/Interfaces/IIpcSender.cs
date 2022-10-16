@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace PlainlyIpc.Interfaces;
+﻿namespace PlainlyIpc.Interfaces;
 
 public interface IIpcSender
 {

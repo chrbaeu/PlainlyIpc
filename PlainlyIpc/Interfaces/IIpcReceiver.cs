@@ -1,7 +1,4 @@
-﻿using PlainlyIpc.EventArgs;
-using System;
-
-namespace PlainlyIpc.Interfaces;
+﻿namespace PlainlyIpc.Interfaces;
 
 public interface IIpcReceiver : IDisposable
 {

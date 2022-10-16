@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Text;
+﻿using System.IO;
 
 namespace PlainlyIpc.Internal;
 
@@ -90,6 +88,11 @@ internal static class MemoryStreamExtensions
     }
 
 #if NETSTANDARD
+
+    public static void Write(this MemoryStream memoryStream, byte[] data)
+    {
+        memoryStream.Write(data, 0, data.Length);
+    }
 
     public static void Write(this MemoryStream memoryStream, ReadOnlySpan<byte> data)
     {

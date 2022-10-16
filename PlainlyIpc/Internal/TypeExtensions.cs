@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace PlainlyIpc.Internal;
+﻿namespace PlainlyIpc.Internal;
 
 internal static class TypeExtensions
 {

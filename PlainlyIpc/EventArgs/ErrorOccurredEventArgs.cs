@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PlainlyIpc.EventArgs;
+﻿namespace PlainlyIpc.EventArgs;
 
 public class ErrorOccurredEventArgs : System.EventArgs
 {

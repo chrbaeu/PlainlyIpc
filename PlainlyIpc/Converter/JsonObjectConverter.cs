@@ -1,7 +1,5 @@
 ﻿#if NET6_0_OR_GREATER
 
-using PlainlyIpc.Interfaces;
-using System;
 using System.Text.Json;
 
 namespace PlainlyIpc.Converter;
