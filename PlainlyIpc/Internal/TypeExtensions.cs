@@ -16,6 +16,10 @@ internal static class TypeExtensions
         if (type is null)
         {
             var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.FullName == parts[0]);
+            if (assembly is null)
+            {
+                assembly = AppDomain.CurrentDomain.Load(parts[0]);
+            }
             type = assembly?.GetType(parts[1]);
         }
         return type ?? throw new ArgumentException("Invalid type info!", nameof(typeInfo));

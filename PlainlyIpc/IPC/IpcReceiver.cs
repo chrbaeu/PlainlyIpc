@@ -2,20 +2,41 @@
 
 namespace PlainlyIpc.IPC;
 
+/// <summary>
+/// IPC Receiver class.
+/// </summary>
 public class IpcReceiver : IIpcReceiver, IDisposable
 {
     private readonly IDataReceiver dataReceiver;
     private readonly IObjectConverter objectConverter;
 
-    public event EventHandler<EventArgs.ErrorOccurredEventArgs>? ErrorOccurred;
+    /// <inheritdoc/>
+    public event EventHandler<ErrorOccurredEventArgs>? ErrorOccurred;
+    /// <inheritdoc/>
     public event EventHandler<IpcMessageReceivedEventArgs>? MessageReceived;
 
+    /// <summary>
+    /// Creates a new IPC receiver based on the given data receiver and object converter.
+    /// </summary>
+    /// <param name="dataReceiver">The data receiver.</param>
+    /// <param name="objectConverter">The object converter.</param>
     public IpcReceiver(IDataReceiver dataReceiver, IObjectConverter objectConverter)
     {
         this.dataReceiver = dataReceiver;
         this.objectConverter = objectConverter;
         this.dataReceiver.DataReceived += DataReceiver_MessageReceived;
         this.dataReceiver.ErrorOccurred += DataReceiver_ErrorOccurred;
+    }
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        dataReceiver.DataReceived -= DataReceiver_MessageReceived;
+        dataReceiver.ErrorOccurred -= DataReceiver_ErrorOccurred;
+        dataReceiver.Dispose();
+        MessageReceived = null;
+        ErrorOccurred = null;
+        GC.SuppressFinalize(this);
     }
 
     private void DataReceiver_MessageReceived(object? sender, DataReceivedEventArgs args)
@@ -29,11 +50,11 @@ public class IpcReceiver : IIpcReceiver, IDisposable
             if (msgType == IpcMessageType.StringData)
             {
                 type = typeof(string);
-                data = Encoding.UTF8.GetString(args.Data, 1, args.Data.Length - 1);
+                data = Encoding.UTF8.GetString(args.Data, 1, args.Data.Length - 2);
             }
             else if (msgType == IpcMessageType.ObjectData)
             {
-                using MemoryStream memoryStream = new(args.Data);
+                using MemoryStream memoryStream = new(args.Data, 1, args.Data.Length - 1);
                 type = TypeExtensions.GetTypeFromTypeString(memoryStream.ReadUtf8String());
                 data = objectConverter.Deserialize(memoryStream.ReadArray(), type);
             }
@@ -45,23 +66,15 @@ public class IpcReceiver : IIpcReceiver, IDisposable
         }
         catch (Exception e)
         {
-            ErrorOccurred?.Invoke(this, new EventArgs.ErrorOccurredEventArgs(0, "Processing of received data failed.", e));
+            ErrorOccurred?.Invoke(this, new ErrorOccurredEventArgs(0, "Processing of received data failed.", e));
             return;
         }
         MessageReceived?.Invoke(this, new IpcMessageReceivedEventArgs(msgType, data, type));
     }
 
-    private void DataReceiver_ErrorOccurred(object? sender, EventArgs.ErrorOccurredEventArgs e)
+    private void DataReceiver_ErrorOccurred(object? sender, ErrorOccurredEventArgs e)
     {
         ErrorOccurred?.Invoke(this, e);
-    }
-
-
-    public void Dispose()
-    {
-        dataReceiver.DataReceived -= DataReceiver_MessageReceived;
-        dataReceiver.ErrorOccurred -= DataReceiver_ErrorOccurred;
-        GC.SuppressFinalize(this);
     }
 
 }

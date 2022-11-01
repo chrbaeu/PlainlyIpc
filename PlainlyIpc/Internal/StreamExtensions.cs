@@ -11,9 +11,9 @@ internal static class StreamExtensions
         while (offset < count)
         {
 #if NETSTANDARD
-            int read = await stream.ReadAsync(buffer, offset, count - offset);
+            int read = await stream.ReadAsync(buffer, offset, count - offset).ConfigureAwait(false);
 #else            
-            int read = await stream.ReadAsync(buffer.AsMemory(offset, count - offset));
+            int read = await stream.ReadAsync(buffer.AsMemory(offset, count - offset)).ConfigureAwait(false);
 #endif
             if (read == 0) { throw new EndOfStreamException($"The end of the stream was reached before all {count} bytes were read."); }
             offset += read;
@@ -26,9 +26,9 @@ internal static class StreamExtensions
         while (offset < count)
         {
 #if NETSTANDARD
-            int read = await stream.ReadAsync(buffer, offset, count - offset, cancellationToken);
+            int read = await stream.ReadAsync(buffer, offset, count - offset, cancellationToken).ConfigureAwait(false);
 #else
-            int read = await stream.ReadAsync(buffer.AsMemory(offset, count - offset), cancellationToken);
+            int read = await stream.ReadAsync(buffer.AsMemory(offset, count - offset), cancellationToken).ConfigureAwait(false);
 #endif
             if (read == 0) { throw new EndOfStreamException($"The end of the stream was reached before all {count} bytes were read."); }
             offset += read;

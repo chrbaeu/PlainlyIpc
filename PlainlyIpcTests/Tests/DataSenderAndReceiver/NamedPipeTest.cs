@@ -19,7 +19,7 @@ public class NamedPipeTest
             e.Data.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(testText));
             tsc.SetResult(true);
         };
-        var serverTask = Task.Run(() => server.StartListenAync());
+        var serverTask = Task.Run(() => server.StartAsync());
 
         using NamedPipeClient client = new("PlainlyIpcTests_SendAndReciveData");
         await client.ConnectAsync();
@@ -56,7 +56,7 @@ public class NamedPipeTest
         {
             Assert.Fail(e.Message);
         };
-        var serverTask = Task.Run(() => server.StartListenAync());
+        var serverTask = Task.Run(() => server.StartAsync());
 
         NamedPipeClient client = new("PlainlyIpcTests_ConnectAndReconnectTest");
         await client.ConnectAsync();
@@ -82,7 +82,7 @@ public class NamedPipeTest
 
         server.Dispose();
 
-        await Assert.ThrowsAsync<IOException>(async () =>
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
             await client.SendAsync(Encoding.UTF8.GetBytes(testText));
         });
