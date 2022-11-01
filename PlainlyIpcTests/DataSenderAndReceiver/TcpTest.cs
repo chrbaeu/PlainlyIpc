@@ -2,7 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 
-namespace PlainlyIpcTests.Tests.NamedPipe;
+namespace PlainlyIpcTests.NamedPipe;
 
 public class TcpTest
 {

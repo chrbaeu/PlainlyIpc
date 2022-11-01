@@ -1,7 +1,7 @@
 ﻿using PlainlyIpc.Converter;
 using PlainlyIpc.IPC;
 
-namespace PlainlyIpcTests.Tests.Ipc;
+namespace PlainlyIpcTests.Ipc;
 public class ChatServiceTest
 {
     private readonly string testText = "Hello World";

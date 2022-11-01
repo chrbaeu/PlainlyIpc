@@ -1,6 +1,6 @@
 ﻿using PlainlyIpc.Converter;
 
-namespace PlainlyIpcTests.Tests.Converter;
+namespace PlainlyIpcTests.Converter;
 
 public class ConverterTests
 {

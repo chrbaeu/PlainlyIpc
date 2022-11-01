@@ -86,7 +86,7 @@ internal static class RemoteMessageHelper
                 memoryStream.WriteInt(remoteCall.GenericArguments.Length);
                 foreach (Type genericArgument in remoteCall.GenericArguments)
                 {
-                    memoryStream.WriteUtf8String(remoteCall.InterfaceType.GetTypeString());
+                    memoryStream.WriteUtf8String(genericArgument.GetTypeString());
                 }
                 break;
             case RemoteResult remoteResult:

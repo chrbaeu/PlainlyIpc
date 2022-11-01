@@ -1,6 +1,6 @@
 ﻿using PlainlyIpc.NamedPipe;
 
-namespace PlainlyIpcTests.Tests.NamedPipe;
+namespace PlainlyIpcTests.NamedPipe;
 
 public class NamedPipeTest
 {

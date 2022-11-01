@@ -2,7 +2,7 @@
 using PlainlyIpc.IPC;
 using System.Drawing;
 
-namespace PlainlyIpcTests.Tests.Ipc;
+namespace PlainlyIpcTests.Ipc;
 
 public class NamedPipeIpcHandlerTest
 {
