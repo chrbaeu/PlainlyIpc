@@ -7,7 +7,7 @@ namespace PlainlyIpc.Converter;
 /// <summary>
 /// System.Text.Json based IObjectConverter implentation.
 /// </summary>
-public class JsonObjectConverter : IObjectConverter
+public sealed class JsonObjectConverter : IObjectConverter
 {
     /// <inheritdoc/>
     public byte[] Serialize<T>(T? data)

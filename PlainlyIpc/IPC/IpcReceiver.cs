@@ -5,7 +5,7 @@ namespace PlainlyIpc.IPC;
 /// <summary>
 /// IPC Receiver class.
 /// </summary>
-public class IpcReceiver : IIpcReceiver, IDisposable
+public sealed class IpcReceiver : IIpcReceiver, IDisposable
 {
     private readonly IDataReceiver dataReceiver;
     private readonly IObjectConverter objectConverter;

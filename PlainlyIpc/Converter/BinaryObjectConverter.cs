@@ -10,7 +10,7 @@ namespace PlainlyIpc.Converter;
 #pragma warning disable SYSLIB0011
 [Obsolete("Not recommended for productive use due to security risks.")]
 #endif
-public class BinaryObjectConverter : IObjectConverter
+public sealed class BinaryObjectConverter : IObjectConverter
 {
     /// <inheritdoc/>
     public byte[] Serialize<T>(T? data)

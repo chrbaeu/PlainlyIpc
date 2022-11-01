@@ -1,15 +1,15 @@
 ﻿namespace PlainlyIpc.Rpc;
 
-internal class RemoteResult : RemoteMessage
+internal sealed class RemoteResult : RemoteMessage
 {
-    public RemoteResult(Guid uuid, byte[] result) : base(RemoteMsgType.RemoteResult, uuid)
+    public RemoteResult(Guid uuid, byte[] resultData) : base(RemoteMsgType.RemoteResult, uuid)
     {
-        Result = result;
+        ResultData = resultData;
     }
 
     /// <summary>
     /// The reult of the call.
     /// </summary>
-    public byte[] Result { get; }
+    public byte[] ResultData { get; }
 
 }

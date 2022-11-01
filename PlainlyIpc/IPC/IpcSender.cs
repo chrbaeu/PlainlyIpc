@@ -6,7 +6,7 @@ namespace PlainlyIpc.IPC;
 /// <summary>
 /// IPC sender class.
 /// </summary>
-public class IpcSender : IIpcSender
+public sealed class IpcSender : IIpcSender
 {
     private readonly SemaphoreSlim semaphoreSlim = new(1, 1);
     private readonly IDataSender dataSender;

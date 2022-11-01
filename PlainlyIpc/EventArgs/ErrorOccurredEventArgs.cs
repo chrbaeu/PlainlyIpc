@@ -1,6 +1,6 @@
 ﻿namespace PlainlyIpc.EventArgs;
 
-public class ErrorOccurredEventArgs : System.EventArgs
+public sealed class ErrorOccurredEventArgs : System.EventArgs
 {
     public int ErrorCode { get; }
     public string Message { get; }

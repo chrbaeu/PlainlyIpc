@@ -8,7 +8,7 @@ namespace PlainlyIpc.Converter;
 /// <summary>
 /// System.Xml.Serialization based IObjectConverter implentation.
 /// </summary>
-public class XmlObjectConverter : IObjectConverter
+public sealed class XmlObjectConverter : IObjectConverter
 {
     /// <inheritdoc/>
     public byte[] Serialize<T>(T? data)

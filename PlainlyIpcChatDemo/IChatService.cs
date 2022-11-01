@@ -1,6 +1,6 @@
 ﻿namespace PlainlyIpcChatDemo;
 
-internal interface IChatService
+public interface IChatService
 {
     public void SendMessage(string message);
 }

@@ -6,7 +6,7 @@ namespace PlainlyIpc.IPC;
 /// <summary>
 /// IPC Handler class
 /// </summary>
-public class IpcHandler : IIpcHandler
+public sealed class IpcHandler : IIpcHandler
 {
     private readonly Dictionary<Guid, TaskCompletionSource<RemoteResult>> tcsDict = new();
     private readonly Dictionary<Type, object> serviceDict = new();
@@ -98,7 +98,7 @@ public class IpcHandler : IIpcHandler
         foreach (var item in tcsDict.ToList())
         {
             tcsDict.Remove(item.Key);
-            item.Value.SetException(new ObjectDisposedException($"RemoteExecuter is disposed!"));
+            item.Value?.TrySetException(new ObjectDisposedException($"RemoteExecuter is disposed!"));
         }
         ipcSender.Dispose();
         ipcReceiver.MessageReceived -= Receiver_MessageReceived;
@@ -133,7 +133,7 @@ public class IpcHandler : IIpcHandler
         }
         if (result.Task.IsCompleted)
         {
-            return objectConverter.Deserialize<TResult>((await result.Task).Result)!;
+            return objectConverter.Deserialize<TResult>((await result.Task).ResultData)!;
         }
         throw new RemoteException("Unexpected error");
     }
@@ -146,7 +146,6 @@ public class IpcHandler : IIpcHandler
             return;
         }
         var remoteAction = RemoteMessageHelper.FromBytes(((Memory<byte>)e.Value!).ToArray());
-        TaskCompletionSource<RemoteResult>? tcs;
         switch (remoteAction)
         {
             case RemoteCall remoteCall:
@@ -157,15 +156,17 @@ public class IpcHandler : IIpcHandler
                 }
                 break;
             case RemoteResult remoteResult:
-                if (tcsDict.TryGetValue(remoteResult.Uuid, out tcs))
+                if (tcsDict.TryGetValue(remoteResult.Uuid, out var resultTcs))
                 {
-                    tcs.SetResult(remoteResult);
+                    resultTcs.SetResult(remoteResult);
+                    tcsDict.Remove(remoteResult.Uuid);
                 }
                 break;
             case RemoteError remoteError:
-                if (tcsDict.TryGetValue(remoteError.Uuid, out tcs))
+                if (tcsDict.TryGetValue(remoteError.Uuid, out var errorTcs))
                 {
-                    tcs.SetException(new RemoteException(remoteError.ErrorMessage));
+                    errorTcs.SetException(new RemoteException(remoteError.ErrorMessage));
+                    tcsDict.Remove(remoteError.Uuid);
                 }
                 break;
         }

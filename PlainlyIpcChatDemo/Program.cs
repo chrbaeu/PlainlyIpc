@@ -61,7 +61,7 @@ internal class Program
         Console.WriteLine(e.Value);
     }
 
-    private static void IpcHandler_ErrorOccurred(object sender, ErrorOccurredEventArgs e)
+    private static void IpcHandler_ErrorOccurred(object? sender, ErrorOccurredEventArgs e)
     {
         Console.WriteLine(e.Message);
     }

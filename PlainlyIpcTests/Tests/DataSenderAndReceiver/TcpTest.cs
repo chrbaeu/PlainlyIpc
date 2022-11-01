@@ -1,8 +1,6 @@
-﻿using PlainlyIpc.EventArgs;
-using PlainlyIpc.Tcp;
+﻿using PlainlyIpc.Tcp;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 
 namespace PlainlyIpcTests.Tests.NamedPipe;
 
@@ -117,7 +115,7 @@ public class TcpTest
         TaskCompletionSource<bool> tsc = new();
 
         MangedTcpListener server = new(ipEndpoint);
-        server.IncomingTcpClient += async (object? sender, IncomingTcpClientEventArgs e) =>
+        server.IncomingTcpClient += (object? sender, IncomingTcpClientEventArgs e) =>
         {
             e.TcpClient.Dispose();
         };

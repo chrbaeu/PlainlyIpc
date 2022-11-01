@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace PlainlyIpc.Tcp;
 
-public class ManagedTcpClient : IDataSender, IDataReceiver, IDisposable
+public sealed class ManagedTcpClient : IDataSender, IDataReceiver, IDisposable
 {
     private readonly CancellationTokenSource cancellationTokenSource = new();
     private readonly TcpClient tcpClient;
@@ -117,7 +117,7 @@ public class ManagedTcpClient : IDataSender, IDataReceiver, IDisposable
         networkStream = tcpClient.GetStream();
     }
 
-    public virtual async Task AcceptIncommingData()
+    public async Task AcceptIncommingData()
     {
         if (!IsConnected || networkStream is null) { throw new InvalidOperationException("AcceptIncommingData requires a open connection."); }
         try

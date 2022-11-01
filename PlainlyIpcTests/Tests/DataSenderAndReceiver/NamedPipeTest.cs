@@ -1,6 +1,4 @@
-﻿using PlainlyIpc.EventArgs;
-using PlainlyIpc.NamedPipe;
-using System.Text;
+﻿using PlainlyIpc.NamedPipe;
 
 namespace PlainlyIpcTests.Tests.NamedPipe;
 

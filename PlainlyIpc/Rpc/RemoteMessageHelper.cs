@@ -90,7 +90,7 @@ internal static class RemoteMessageHelper
                 }
                 break;
             case RemoteResult remoteResult:
-                memoryStream.WriteArray(remoteResult.Result);
+                memoryStream.WriteArray(remoteResult.ResultData);
                 break;
             case RemoteError remoteError:
                 memoryStream.WriteUtf8String(remoteError.ErrorMessage);

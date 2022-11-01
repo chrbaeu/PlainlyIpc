@@ -2,7 +2,7 @@
 
 namespace PlainlyIpc.EventArgs;
 
-public class IncomingTcpClientEventArgs : System.EventArgs
+public sealed class IncomingTcpClientEventArgs : System.EventArgs
 {
     public ManagedTcpClient TcpClient { get; }
 

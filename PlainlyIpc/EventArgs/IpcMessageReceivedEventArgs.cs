@@ -1,6 +1,6 @@
 ﻿namespace PlainlyIpc.EventArgs;
 
-public class IpcMessageReceivedEventArgs : System.EventArgs
+public sealed class IpcMessageReceivedEventArgs : System.EventArgs
 {
     public IpcMessageType MsgType { get; }
     public object? Value { get; }

@@ -1,6 +1,6 @@
 ﻿namespace PlainlyIpcChatDemo;
 
-public class ChatService : IChatService
+internal class ChatService : IChatService
 {
     private readonly Action<string> onMessageAction;
 

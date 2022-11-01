@@ -1,5 +1,4 @@
 ﻿using PlainlyIpc.Converter;
-using PlainlyIpc.Interfaces;
 
 namespace PlainlyIpcTests.Tests.Converter;
 

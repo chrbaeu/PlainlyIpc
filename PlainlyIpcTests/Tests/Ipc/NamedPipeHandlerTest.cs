@@ -1,5 +1,4 @@
 ﻿using PlainlyIpc.Converter;
-using PlainlyIpc.Interfaces;
 using PlainlyIpc.IPC;
 using System.Drawing;
 

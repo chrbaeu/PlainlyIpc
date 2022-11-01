@@ -2,7 +2,7 @@
 
 namespace PlainlyIpc.Rpc;
 
-internal class RemoteCallExecuter
+internal static class RemoteCallExecuter
 {
     public static async Task<RemoteMessage> Execute(RemoteCall remoteCall, object instance, IObjectConverter objectConverter)
     {

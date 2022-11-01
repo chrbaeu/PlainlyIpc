@@ -1,6 +1,6 @@
 ﻿namespace PlainlyIpc.Rpc;
 
-internal class RemoteCall : RemoteMessage
+internal sealed class RemoteCall : RemoteMessage
 {
     public RemoteCall(Guid uuid, Type interfaceType, string methodName, byte[][] parameters, Type[] genericArguments)
         : base(RemoteMsgType.RemoteCall, uuid)

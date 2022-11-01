@@ -1,6 +1,6 @@
 ﻿namespace PlainlyIpc.EventArgs;
 
-public class DataReceivedEventArgs : System.EventArgs
+public sealed class DataReceivedEventArgs : System.EventArgs
 {
 
     public byte[] Data { get; set; }

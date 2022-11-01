@@ -1,6 +1,6 @@
 ﻿namespace PlainlyIpc.Rpc;
 
-internal class RemoteError : RemoteMessage
+internal sealed class RemoteError : RemoteMessage
 {
     public RemoteError(Guid uuid, string errorMessage) : base(RemoteMsgType.RemoteError, uuid)
     {

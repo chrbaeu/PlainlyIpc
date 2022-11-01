@@ -7,7 +7,7 @@ namespace PlainlyIpc.NamedPipe;
 /// <summary>
 /// Named pipe client implementing IDataHandler.
 /// </summary>
-public class NamedPipeClient : IDataHandler, IDisposable
+public sealed class NamedPipeClient : IDataHandler, IDisposable
 {
     private readonly CancellationTokenSource cancellationTokenSource = new();
     private readonly NamedPipeClientStream client;
