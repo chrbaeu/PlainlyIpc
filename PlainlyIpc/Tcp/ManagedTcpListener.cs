@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace PlainlyIpc.Tcp;
 
-public sealed class MangedTcpListener
+public sealed class ManagedTcpListener
 {
     private readonly object lockObject = new();
     private readonly TcpListener tcpListener;
@@ -38,20 +38,20 @@ public sealed class MangedTcpListener
     /// Creates a new server socket to listen on a predefined port on any IP.
     /// </summary>
     /// <param name="port">The port to listen on.</param>
-    public MangedTcpListener(ushort port) => tcpListener = new TcpListener(IPAddress.Any, port);
+    public ManagedTcpListener(ushort port) => tcpListener = new TcpListener(IPAddress.Any, port);
 
     /// <summary>
     /// Creates a server socket to listen on a predefined ip and port.
     /// </summary>
     /// <param name="ipAddress">The IP to listen on</param>
     /// <param name="port">The port to listen on.</param>
-    public MangedTcpListener(IPAddress ipAddress, ushort port) => tcpListener = new TcpListener(ipAddress, port);
+    public ManagedTcpListener(IPAddress ipAddress, ushort port) => tcpListener = new TcpListener(ipAddress, port);
 
     /// <summary>
     /// Creates a server socket to listen on a predefined network endpoint.
     /// </summary>
     /// <param name="ipEndPoint">The network endpoint to listen on</param>
-    public MangedTcpListener(IPEndPoint ipEndPoint) => tcpListener = new TcpListener(ipEndPoint);
+    public ManagedTcpListener(IPEndPoint ipEndPoint) => tcpListener = new TcpListener(ipEndPoint);
 
     /// <summary>
     /// Start asynchrone listening for connections.

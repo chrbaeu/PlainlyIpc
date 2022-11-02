@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace PlainlyIpc.Tcp;
 
-public sealed class ManagedTcpClient : IDataSender, IDataReceiver, IDisposable
+public sealed class ManagedTcpClient : IDataHandler
 {
     private readonly CancellationTokenSource cancellationTokenSource = new();
     private readonly TcpClient tcpClient;

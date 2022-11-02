@@ -2,11 +2,9 @@
 
 A minimalistic, easy-to-use library for inter-process communication (IPC) with .NET.
 
-> Warning
+> Warning: PlainlyIPC is still under development. 
 >
-> PlainlyIPC is still under development. 
-> * A version 1.0 will be released as soon as the remaining features are implemented and properly tested. Therefore, there may be some breaking changes before the release of version 1.0.
-> * PlainlyIpc will support IPC over named pipes and TCP. However, TCP support is still under development.
+> A version 1.0 will be released as soon as the remaining features are implemented and properly tested. Therefore, there may be some breaking changes before the release of version 1.0.
 
 The basis for serialization and deserialization is the IObjectConverter interface. PlanilyIPC provides three different implementations for this interface.
 ```csharp

@@ -15,7 +15,7 @@ public class TcpTest
     {
         TaskCompletionSource<bool> tsc = new();
 
-        MangedTcpListener server = new(ipEndpoint);
+        ManagedTcpListener server = new(ipEndpoint);
         server.IncomingTcpClient += async (object? sender, IncomingTcpClientEventArgs e) =>
         {
             await e.TcpClient.SendAsync(Encoding.UTF8.GetBytes(testText));
@@ -47,11 +47,11 @@ public class TcpTest
     [Fact]
     public void ServerPortInUseTest()
     {
-        MangedTcpListener server1 = new(ipEndpoint);
+        ManagedTcpListener server1 = new(ipEndpoint);
         _ = server1.StartListenAync();
         Assert.Throws<SocketException>(() =>
         {
-            MangedTcpListener server2 = new(ipEndpoint);
+            ManagedTcpListener server2 = new(ipEndpoint);
             _ = server2.StartListenAync();
         });
     }
@@ -61,7 +61,7 @@ public class TcpTest
     {
         TaskCompletionSource<bool> tsc = new();
 
-        MangedTcpListener server = new(ipEndpoint);
+        ManagedTcpListener server = new(ipEndpoint);
         server.IncomingTcpClient += async (object? sender, IncomingTcpClientEventArgs e) =>
         {
             await e.TcpClient.SendAsync(Encoding.UTF8.GetBytes(testText));
@@ -114,7 +114,7 @@ public class TcpTest
     {
         TaskCompletionSource<bool> tsc = new();
 
-        MangedTcpListener server = new(ipEndpoint);
+        ManagedTcpListener server = new(ipEndpoint);
         server.IncomingTcpClient += (object? sender, IncomingTcpClientEventArgs e) =>
         {
             e.TcpClient.Dispose();
