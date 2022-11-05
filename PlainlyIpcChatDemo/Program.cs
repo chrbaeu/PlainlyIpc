@@ -1,6 +1,4 @@
-﻿using PlainlyIpc.Rpc;
-using PlainlyIpcChatDemo.IpcDemp;
-using PlainlyIpcChatDemo.RpcDemo;
+﻿using PlainlyIpcChatDemo.IpcDemp;
 
 namespace PlainlyIpcChatDemo;
 
@@ -10,6 +8,10 @@ internal class Program
     {
         IpcFactory ipcFactory = new();
 
+        //var outputPath = @"C:\Git\chrbaeu\PlainlyIpc\PlainlyIpcChatDemo\RpcDemo\";
+        //RemoteProxyCreator.CreateProxyClass<IChatService>(outputPath, $"{nameof(PlainlyIpcChatDemo)}.{nameof(RpcDemo)}");
+        //RemoteProxyCreator.CreateProxyClass<IRpcTestService>(outputPath, $"PlainlyIpcTests.Rpc");
+        //return;
 
         try
         {

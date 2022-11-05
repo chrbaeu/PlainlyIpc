@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace PlainlyIpcTests.Ipc;
+﻿namespace PlainlyIpcTests.Rpc;
 
 public class RpcTestServiceTest : IAsyncLifetime
 {
@@ -65,28 +63,6 @@ public class RpcTestServiceTest : IAsyncLifetime
         {
             var result = await client.ExecuteRemote<IRpcTestService, int>(x => x.ThrowError(""));
         });
-    }
-
-    private class RpcTestService : IRpcTestService
-    {
-        public int Add(int a, int b) => a + b;
-        public void NoResultOp(int x) => Debug.WriteLine(x);
-        public Task<int> Sum(IEnumerable<int> values) => Task.FromResult(values.Sum());
-        public IEnumerable<int> Convert(params int[] values) => values;
-        public T Generic<T>(T value) => value;
-        public Task GetTask() => Task.CompletedTask;
-        public int ThrowError(string test) => throw new ArgumentException("ERROR", nameof(test));
-    }
-
-    public interface IRpcTestService
-    {
-        public int Add(int a, int b);
-        public void NoResultOp(int x);
-        public Task<int> Sum(IEnumerable<int> values);
-        public IEnumerable<int> Convert(params int[] values);
-        public T Generic<T>(T value);
-        public Task GetTask();
-        public int ThrowError(string test);
     }
 
 }
