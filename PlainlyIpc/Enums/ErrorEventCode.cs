@@ -1,9 +1,9 @@
 ﻿namespace PlainlyIpc.Enums;
 
 /// <summary>
-/// Enum of the supported IPC error codes.
+/// Enum of the supported error event codes.
 /// </summary>
-public enum IpcErrorCode
+public enum ErrorEventCode
 {
     /// <summary>
     /// Connection is lost.

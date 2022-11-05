@@ -8,13 +8,12 @@ namespace PlainlyIpc.Tcp;
 /// <summary>
 /// Managed TCP client class.
 /// </summary>
-public sealed class ManagedTcpClient : IDataHandler
+internal sealed class ManagedTcpClient : IDataHandler
 {
     private readonly CancellationTokenSource cancellationTokenSource = new();
     private readonly TcpClient tcpClient;
-
     private NetworkStream? networkStream;
-    private bool isClosing;
+    private bool isDisposed;
 
     ///<summary>
     ///True if this socket is connected to a server, false otherwise.
@@ -78,7 +77,7 @@ public sealed class ManagedTcpClient : IDataHandler
     }
 
     /// <summary>
-    /// Create a new socket based off an already existing connection
+    /// Create a new socket based of an already existing connection
     /// </summary>
     /// <param name="tcpClient"></param>
     public ManagedTcpClient(TcpClient tcpClient)
@@ -96,13 +95,15 @@ public sealed class ManagedTcpClient : IDataHandler
         this.tcpClient = tcpClient;
         networkStream = tcpClient.GetStream();
         IsConnected = true;
+        _ = AcceptIncommingData();
     }
 
     /// <summary>
     /// Connect to the server.
     /// </summary>
-    public async Task ConnectAsync(int connectionTimeout = 1000)
+    public async Task ConnectAsync(int connectionTimeout = 5000)
     {
+        if (isDisposed) { throw new ObjectDisposedException(nameof(ManagedTcpClient)); }
         if (IsConnected) { return; }
         try
         {
@@ -117,74 +118,9 @@ public sealed class ManagedTcpClient : IDataHandler
         {
             throw new TimeoutException($"Connecting to the endpoint has exceeded the timeout of {connectionTimeout}ms.", e);
         }
-        IsConnected = true;
         networkStream = tcpClient.GetStream();
-    }
-
-    /// <summary>
-    /// Activates the receiving of incoming data
-    /// </summary>
-    public async Task AcceptIncommingData()
-    {
-        if (!IsConnected || networkStream is null) { throw new InvalidOperationException("AcceptIncommingData requires a open connection."); }
-        try
-        {
-            byte[] lenArray = new byte[4];
-            while (IsConnected && !isClosing)
-            {
-                await networkStream.ReadExactly(lenArray, 4, cancellationTokenSource.Token).ConfigureAwait(false);
-                var dataLen = BitConverter.ToInt32(lenArray, 0);
-                if (dataLen == -1)
-                {
-                    IsConnected = false;
-                    break;
-                }
-                byte[] dataArray = new byte[dataLen];
-                DataReceivedEventArgs dataReceivedEventArgs = new(dataArray);
-                await networkStream.ReadExactly(dataArray, dataLen, cancellationTokenSource.Token).ConfigureAwait(false);
-                DataReceived?.Invoke(this, dataReceivedEventArgs);
-            }
-            Disconnect();
-        }
-        catch (EndOfStreamException)
-        {
-            Disconnect();
-        }
-        catch (OperationCanceledException)
-        {
-            Disconnect();
-        }
-        catch (Exception e)
-        {
-            Disconnect("Connection lost.", e);
-        }
-    }
-
-    /// <summary>
-    /// Disconnect from the remote host.
-    /// </summary>
-    public void Disconnect()
-    {
-        Disconnect("Connection closed.");
-    }
-
-    private void Disconnect(string reason, Exception? exception = null)
-    {
-        if (!IsConnected || isClosing) { return; }
-        isClosing = true;
-        cancellationTokenSource.Cancel();
-        try
-        {
-            networkStream?.Write(BitConverter.GetBytes(-1), 0, 4);
-        }
-        catch { }
-        networkStream?.Dispose();
-        IsConnected = false;
-        isClosing = false;
-        if (exception is not null)
-        {
-            ErrorOccurred?.Invoke(this, new(0, reason, exception));
-        }
+        IsConnected = true;
+        _ = AcceptIncommingData();
     }
 
     /// <summary>
@@ -193,29 +129,67 @@ public sealed class ManagedTcpClient : IDataHandler
     /// <param name="data">The memory of bytes to send.</param>
     public async Task SendAsync(byte[] data)
     {
+        if (isDisposed) { throw new ObjectDisposedException(nameof(ManagedTcpClient)); }
         if (data is null) { throw new ArgumentNullException(nameof(data)); }
-        if (!IsConnected || networkStream is null) { throw new InvalidOperationException("Sending data requires a open connection."); }
+        if (!IsConnected || networkStream is null) { throw new InvalidOperationException($"{nameof(ManagedTcpClient)} must be connected to send data!"); }
         try
         {
-
             await networkStream.WriteAsync(BitConverter.GetBytes(data.Length)).ConfigureAwait(false);
             await networkStream.WriteAsync(data).ConfigureAwait(false);
-            return;
         }
-        catch (Exception e)
+        catch (Exception)
         {
-            Disconnect("Error sending data", e);
+            IsConnected = false;
+            throw;
         }
-        throw new InvalidOperationException("Data could not be sent. An existing connection is required.");
     }
 
     /// <inheritdoc/>
     public void Dispose()
     {
-        Disconnect();
+        if (isDisposed) { return; }
+        isDisposed = true;
+        IsConnected = false;
+        cancellationTokenSource.Cancel();
+        networkStream?.Dispose();
         tcpClient.Dispose();
         cancellationTokenSource.Dispose();
         GC.SuppressFinalize(this);
+    }
+
+    private async Task AcceptIncommingData()
+    {
+        if (networkStream is null) { throw new InvalidOperationException("AcceptIncommingData requires a open connection."); }
+        try
+        {
+            byte[] lenArray = new byte[4];
+            while (IsConnected && !cancellationTokenSource.Token.IsCancellationRequested)
+            {
+                try
+                {
+                    await networkStream.ReadExactly(lenArray, 4, cancellationTokenSource.Token).ConfigureAwait(false);
+                }
+                catch (EndOfStreamException e)
+                {
+                    IsConnected = false;
+                    ErrorOccurred?.Invoke(this, new(ErrorEventCode.ConnectionLost, "The connection was lost.", e));
+                    break;
+                }
+                int dataLen = BitConverter.ToInt32(lenArray, 0);
+                byte[] dataArray = new byte[dataLen];
+                await networkStream.ReadExactly(dataArray, dataLen, cancellationTokenSource.Token).ConfigureAwait(false);
+                DataReceived?.Invoke(this, new(dataArray));
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            IsConnected = false;
+        }
+        catch (Exception e)
+        {
+            IsConnected = false;
+            ErrorOccurred?.Invoke(this, new(ErrorEventCode.UnexpectedError, "An error occurred while receiving data. The connection was lost.", e));
+        }
     }
 
 }

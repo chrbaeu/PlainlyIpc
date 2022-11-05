@@ -5,7 +5,7 @@ namespace PlainlyIpcChatDemo.IpcDemp;
 internal class TcpIpcDemo
 {
     /// <summary>
-    /// Demo for a simple TCP based chat.
+    /// Demo for a simple TCP based IPC chat.
     /// </summary>
     public static async Task Run(IpcFactory ipcFactory)
     {
@@ -43,6 +43,7 @@ internal class TcpIpcDemo
             if (line.ToLower() == "exit") { break; }
             await ipcHandler.SendStringAsync(line);
         }
+        ipcHandler.Dispose();
     }
 
 }

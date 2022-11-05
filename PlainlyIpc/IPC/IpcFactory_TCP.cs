@@ -95,7 +95,6 @@ public sealed partial class IpcFactory
             managedTcpClient = new(ipEndPoint);
             ipcHandler = new IpcHandler(managedTcpClient, objectConverter);
             await managedTcpClient.ConnectAsync().ConfigureAwait(false);
-            _ = managedTcpClient.AcceptIncommingData();
             return ipcHandler;
         }
         catch

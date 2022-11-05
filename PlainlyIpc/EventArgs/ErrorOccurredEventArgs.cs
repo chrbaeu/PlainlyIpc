@@ -8,7 +8,7 @@ public sealed class ErrorOccurredEventArgs : System.EventArgs
     /// <summary>
     /// The error code.
     /// </summary>
-    public IpcErrorCode ErrorCode { get; }
+    public ErrorEventCode ErrorCode { get; }
 
     /// <summary>
     /// The error message.
@@ -26,7 +26,7 @@ public sealed class ErrorOccurredEventArgs : System.EventArgs
     /// <param name="errorCode">The error code.</param>
     /// <param name="message">The error message.</param>
     /// <param name="exception">The exception that causes the error (optional).</param>
-    public ErrorOccurredEventArgs(IpcErrorCode errorCode, string message, Exception? exception)
+    public ErrorOccurredEventArgs(ErrorEventCode errorCode, string message, Exception? exception)
     {
         ErrorCode = errorCode;
         Message = message;

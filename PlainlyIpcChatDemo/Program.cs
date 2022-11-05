@@ -8,18 +8,13 @@ internal class Program
     {
         IpcFactory ipcFactory = new();
 
-        //var outputPath = @"C:\Git\chrbaeu\PlainlyIpc\PlainlyIpcChatDemo\RpcDemo\";
-        //RemoteProxyCreator.CreateProxyClass<IChatService>(outputPath, $"{nameof(PlainlyIpcChatDemo)}.{nameof(RpcDemo)}");
-        //RemoteProxyCreator.CreateProxyClass<IRpcTestService>(outputPath, $"PlainlyIpcTests.Rpc");
-        //return;
-
         try
         {
             Console.WriteLine($"Start demo with TCP instead of named pipes (y/n)?");
             string newServer = Console.ReadLine() ?? "";
             if (newServer.ToLower() == "y")
             {
-                await TcpIpcDemo.Run(ipcFactory);
+                await TcpRpcDemo.Run(ipcFactory);
             }
             else
             {

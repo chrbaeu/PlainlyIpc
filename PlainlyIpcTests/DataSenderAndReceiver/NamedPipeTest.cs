@@ -25,7 +25,7 @@ public class NamedPipeTest
 
         await client.SendAsync(Encoding.UTF8.GetBytes(TestData.Text));
 
-        var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 1));
+        var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 5));
 
         passed.Should().BeTrue();
     }
@@ -53,7 +53,7 @@ public class NamedPipeTest
         };
         server.ErrorOccurred += (object? sender, ErrorOccurredEventArgs e) =>
         {
-            if (e.ErrorCode != IpcErrorCode.ConnectionLost) { Assert.Fail(e.Message); }
+            if (e.ErrorCode != ErrorEventCode.ConnectionLost) { Assert.Fail(e.Message); }
         };
         var serverTask = Task.Run(() => server.StartAsync());
 
@@ -66,7 +66,7 @@ public class NamedPipeTest
         await client.SendAsync(Encoding.UTF8.GetBytes(TestData.Text));
         client.Dispose();
 
-        var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 1));
+        var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 5));
 
         passed.Should().BeTrue();
     }

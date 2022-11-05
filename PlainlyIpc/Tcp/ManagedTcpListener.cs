@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 
@@ -8,13 +7,17 @@ namespace PlainlyIpc.Tcp;
 /// <summary>
 /// Managed TCP listener class.
 /// </summary>
-public sealed class ManagedTcpListener
+internal sealed class ManagedTcpListener : IDisposable
 {
-    private readonly object lockObject = new();
     private readonly TcpListener tcpListener;
-    private readonly CancellationTokenSource cancellationTokenSource = new();
+    private CancellationTokenSource cancellationTokenSource = new();
+    private bool isDisposed;
 
-    private bool isStopping;
+    /// <summary>
+    /// Gets the available IP addresses of the host.
+    /// </summary>
+    /// <returns>The list of available IP addresses.</returns>
+    public static IList<IPAddress> GetHostIpAddresses() => Dns.GetHostEntry(Dns.GetHostName()).AddressList;
 
     /// <summary>
     /// Indicates if the server is listening for connections.
@@ -30,12 +33,6 @@ public sealed class ManagedTcpListener
     /// Event called when a error occurs.
     /// </summary>
     public event EventHandler<ErrorOccurredEventArgs>? ErrorOccurred;
-
-    /// <summary>
-    /// Gets the available IP addresses of the host.
-    /// </summary>
-    /// <returns>The list of available IP addresses.</returns>
-    public static IList<IPAddress> GetHostIpAddresses() => Dns.GetHostEntry(Dns.GetHostName()).AddressList;
 
     /// <summary>
     /// Creates a new server socket to listen on a predefined port on any IP.
@@ -61,57 +58,62 @@ public sealed class ManagedTcpListener
     /// </summary>
     public Task StartListenAync(int? backlog = null)
     {
-        lock (lockObject)
-        {
-            if (IsListening) { return Task.CompletedTask; }
-            IsListening = true;
-            if (backlog is null) { tcpListener.Start(); } else { tcpListener.Start(backlog.Value); }
-        }
-        return WaitForClient();
+        if (isDisposed) { throw new ObjectDisposedException(nameof(ManagedTcpListener)); }
+        if (IsListening) { return Task.CompletedTask; }
+        if (backlog is null) { tcpListener.Start(); } else { tcpListener.Start(backlog.Value); }
+        IsListening = true;
+        return Task.Run(WaitForClient);
     }
 
     /// <summary>
     /// Stop listening for new clients.
     /// </summary>
-    public void Stop() => Stop(null);
-
-    private void Stop(Exception? e = null)
+    public void Stop()
     {
-        lock (lockObject)
-        {
-            if (!IsListening || isStopping) { return; }
-            isStopping = true;
-            cancellationTokenSource.Cancel();
-            tcpListener.Stop();
-            IsListening = false;
-            isStopping = false;
-        }
-        if (e is not null)
-        {
-            ErrorOccurred?.Invoke(this, new(0, "Server stopped", e));
-        }
+        if (isDisposed) { throw new ObjectDisposedException(nameof(ManagedTcpListener)); }
+        if (!IsListening) { return; }
+        IsListening = false;
+        cancellationTokenSource.Cancel();
+        tcpListener.Stop();
+        cancellationTokenSource.Dispose();
+        cancellationTokenSource = new();
     }
 
-    //[DebuggerHidden]
-    //[DebuggerStepThrough]
-    [DebuggerNonUserCode]
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        if (isDisposed) { return; }
+        isDisposed = true;
+        IsListening = false;
+        cancellationTokenSource.Cancel();
+        tcpListener.Stop();
+        cancellationTokenSource.Dispose();
+    }
+
     private async Task WaitForClient()
     {
         try
         {
-            while (IsListening && !isStopping)
+            while (IsListening && !cancellationTokenSource.Token.IsCancellationRequested)
             {
-                TcpClient tcpClient = await tcpListener.AcceptTcpClientAsync().ConfigureAwait(false);
+#if NETSTANDARD2_0
+                TcpClient tcpClient = await Task.Factory.StartNew(l => ((TcpListener)l).AcceptTcpClientAsync(), tcpListener,
+                    cancellationTokenSource.Token, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default).Unwrap().ConfigureAwait(false);
+#else
+                TcpClient tcpClient = await tcpListener.AcceptTcpClientAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+#endif
                 IncomingTcpClient?.Invoke(this, new(new(tcpClient)));
             }
+            IsListening = false;
         }
         catch (OperationCanceledException)
         {
-            Stop();
+            IsListening = false;
         }
         catch (Exception e)
         {
-            Stop(e);
+            ErrorOccurred?.Invoke(this, new(ErrorEventCode.UnexpectedError, "Server stopped", e));
+            IsListening = false;
         }
     }
 

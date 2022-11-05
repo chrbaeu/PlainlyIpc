@@ -22,7 +22,7 @@ public class ChatServiceTest
         using IIpcHandler handlerC = await ipcFactory.CreateNampedPipeIpcClient(namedPipeName);
         await handlerC.ExecuteRemote<IChatService>(x => x.SendMessage(TestData.Text));
 
-        var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 1));
+        var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 5));
         passed.Should().BeTrue();
     }
 

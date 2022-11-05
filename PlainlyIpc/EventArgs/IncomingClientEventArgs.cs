@@ -5,7 +5,7 @@ namespace PlainlyIpc.EventArgs;
 /// <summary>
 /// Event class for connecting TCP clients.
 /// </summary>
-public sealed class IncomingTcpClientEventArgs : System.EventArgs
+internal sealed class IncomingTcpClientEventArgs : System.EventArgs
 {
     /// <summary>
     /// The connecting TCP client.

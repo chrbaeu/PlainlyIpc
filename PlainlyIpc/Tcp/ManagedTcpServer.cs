@@ -5,10 +5,11 @@ namespace PlainlyIpc.Tcp;
 /// <summary>
 /// TCP server based on the ManagedTcpLister that implenets the IDataHandler interface.
 /// </summary>
-public sealed class ManagedTcpServer : IDataHandler
+internal sealed class ManagedTcpServer : IDataHandler
 {
     private readonly ManagedTcpListener tcpListener;
     private readonly List<ManagedTcpClient> clients = new();
+    private bool isDisposed;
 
     /// <inheritdoc/>
     public event EventHandler<DataReceivedEventArgs>? DataReceived;
@@ -19,7 +20,7 @@ public sealed class ManagedTcpServer : IDataHandler
     /// <summary>
     /// Indicates if the named pipe server listens for incoming data. 
     /// </summary>
-    public bool IsActive { get; private set; }
+    public bool IsActive => tcpListener.IsListening;
 
     /// <summary>
     /// Creates a new ManagedTcpServer for the given IP endpoint.
@@ -37,28 +38,32 @@ public sealed class ManagedTcpServer : IDataHandler
     /// </summary>
     public Task StartAsync()
     {
+        if (isDisposed) { throw new ObjectDisposedException(nameof(ManagedTcpServer)); }
         if (IsActive) { return Task.CompletedTask; }
-        IsActive = true;
-        return Task.Run(() => tcpListener.StartListenAync());
+        return tcpListener.StartListenAync();
     }
 
     /// <inheritdoc/>
-    public Task SendAsync(byte[] data)
+    public async Task SendAsync(byte[] data)
     {
+        if (isDisposed) { throw new ObjectDisposedException(nameof(ManagedTcpServer)); }
         if (!clients.Any()) { throw new InvalidOperationException("There are no clients connected to which data can be sent."); }
-        return Task.WhenAll(clients.Select(x => x.SendAsync(data)).ToArray());
+        await Task.WhenAll(clients.ToList().Select(x => x.SendAsync(data)).ToArray()).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public void Dispose()
     {
+        if (isDisposed) { return; }
+        isDisposed = true;
         tcpListener.Stop();
+        tcpListener.Dispose();
         GC.SuppressFinalize(this);
     }
 
     private void TcpListener_ErrorOccurred(object? sender, ErrorOccurredEventArgs e)
     {
-        ErrorOccurred?.Invoke(this, e);
+        ErrorOccurred?.Invoke(sender, e);
     }
 
     private void TcpListener_IncomingTcpClient(object? sender, IncomingTcpClientEventArgs e)
@@ -66,7 +71,6 @@ public sealed class ManagedTcpServer : IDataHandler
         e.TcpClient.DataReceived += TcpClient_DataReceived;
         e.TcpClient.ErrorOccurred += TcpClient_ErrorOccurred;
         clients.Add(e.TcpClient);
-        _ = e.TcpClient.AcceptIncommingData();
     }
 
     private void TcpClient_ErrorOccurred(object? sender, ErrorOccurredEventArgs e)

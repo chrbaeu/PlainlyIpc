@@ -26,7 +26,7 @@ public class NamedPipeIpcHandlerTest
 
         await handlerC.SendStringAsync(TestData.Text);
 
-        var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 1));
+        var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 5));
         passed.Should().BeTrue();
     }
 
@@ -57,7 +57,7 @@ public class NamedPipeIpcHandlerTest
 
         await handlerC.SendStringAsync(TestData.Text);
 
-        var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 1));
+        var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 5));
         passed.Should().BeTrue();
     }
 
@@ -68,7 +68,7 @@ public class NamedPipeIpcHandlerTest
         bool state = false;
         handlerS.ErrorOccurred += (sender, e) =>
         {
-            if (e.ErrorCode != IpcErrorCode.ConnectionLost) { tsc.TrySetResult(false); }
+            if (e.ErrorCode != ErrorEventCode.ConnectionLost) { tsc.TrySetResult(false); }
         };
         handlerS.MessageReceived += (sender, e) =>
         {
@@ -90,7 +90,7 @@ public class NamedPipeIpcHandlerTest
         await handlerC.SendStringAsync(TestData.Text);
         handlerC.Dispose();
 
-        var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 1));
+        var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 5));
         passed.Should().BeTrue();
     }
 
@@ -114,7 +114,7 @@ public class NamedPipeIpcHandlerTest
 
         await handlerC.SendObjectAsync(rect);
 
-        var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 1));
+        var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 5));
         passed.Should().BeTrue();
     }
 
