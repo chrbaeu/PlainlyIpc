@@ -11,6 +11,7 @@ public sealed class IpcSender : IIpcSender
     private readonly SemaphoreSlim semaphoreSlim = new(1, 1);
     private readonly IDataSender dataSender;
     private readonly IObjectConverter objectConverter;
+    private bool isDisposed;
 
     /// <summary>
     /// Creates a new IPC sender with the given data sender and object converter.
@@ -26,6 +27,8 @@ public sealed class IpcSender : IIpcSender
     /// <inheritdoc/>
     public async Task SendAsync(byte[] data)
     {
+        if (isDisposed) { throw new ObjectDisposedException(nameof(IpcSender)); }
+        if (data is null) { throw new ArgumentNullException(nameof(data)); }
         await semaphoreSlim.WaitAsync().ConfigureAwait(false);
         try
         {
@@ -47,6 +50,7 @@ public sealed class IpcSender : IIpcSender
     /// <inheritdoc/>
     public async Task SendAsync(ReadOnlyMemory<byte> data)
     {
+        if (isDisposed) { throw new ObjectDisposedException(nameof(IpcSender)); }
         await semaphoreSlim.WaitAsync().ConfigureAwait(false);
         try
         {
@@ -68,6 +72,8 @@ public sealed class IpcSender : IIpcSender
     /// <inheritdoc/>
     public async Task SendStringAsync(string data)
     {
+        if (isDisposed) { throw new ObjectDisposedException(nameof(IpcSender)); }
+        if (data is null) { throw new ArgumentNullException(nameof(data)); }
         await semaphoreSlim.WaitAsync().ConfigureAwait(false);
         try
         {
@@ -89,6 +95,8 @@ public sealed class IpcSender : IIpcSender
     /// <inheritdoc/>
     public async Task SendObjectAsync<T>(T data)
     {
+        if (isDisposed) { throw new ObjectDisposedException(nameof(IpcSender)); }
+        if (data is null) { throw new ArgumentNullException(nameof(data)); }
         await semaphoreSlim.WaitAsync().ConfigureAwait(false);
         try
         {
@@ -116,6 +124,8 @@ public sealed class IpcSender : IIpcSender
     /// <exception cref="IpcException"></exception>
     public async Task SendRemoteMessageAsync(byte[] data)
     {
+        if (isDisposed) { throw new ObjectDisposedException(nameof(IpcSender)); }
+        if (data is null) { throw new ArgumentNullException(nameof(data)); }
         await semaphoreSlim.WaitAsync().ConfigureAwait(false);
         try
         {
@@ -137,7 +147,10 @@ public sealed class IpcSender : IIpcSender
     /// <inheritdoc/>
     public void Dispose()
     {
+        if (isDisposed) { return; }
+        isDisposed = true;
         dataSender.Dispose();
+        semaphoreSlim.Dispose();
         GC.SuppressFinalize(this);
     }
 

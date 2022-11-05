@@ -1,28 +1,29 @@
 ﻿using PlainlyIpc.NamedPipe;
+using System.IO;
 
 namespace PlainlyIpcTests.NamedPipe;
 
 public class NamedPipeTest
 {
-    private readonly string testText = "Hello World";
+    private readonly string namedPipeName = ConnectionAddressFactory.GetNamedPipeName();
 
     [Fact]
     public async Task SendAndReciveData()
     {
         TaskCompletionSource<bool> tsc = new();
 
-        using NamedPipeServer server = new("PlainlyIpcTests_SendAndReciveData");
+        using NamedPipeServer server = new(namedPipeName);
         server.DataReceived += (object? sender, DataReceivedEventArgs e) =>
         {
-            e.Data.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(testText));
+            e.Data.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(TestData.Text));
             tsc.SetResult(true);
         };
         var serverTask = Task.Run(() => server.StartAsync());
 
-        using NamedPipeClient client = new("PlainlyIpcTests_SendAndReciveData");
+        using NamedPipeClient client = new(namedPipeName);
         await client.ConnectAsync();
 
-        await client.SendAsync(Encoding.UTF8.GetBytes(testText));
+        await client.SendAsync(Encoding.UTF8.GetBytes(TestData.Text));
 
         var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 1));
 
@@ -32,10 +33,10 @@ public class NamedPipeTest
     [Fact]
     public void NamedPipeInUseTest()
     {
-        using NamedPipeServer server1 = new("PlainlyIpcTests_NamedPipeInUseTest");
+        using NamedPipeServer server1 = new(namedPipeName);
         Assert.Throws<IOException>(() =>
         {
-            using NamedPipeServer server2 = new("PlainlyIpcTests_NamedPipeInUseTest");
+            using NamedPipeServer server2 = new(namedPipeName);
         });
     }
 
@@ -44,25 +45,25 @@ public class NamedPipeTest
     {
         TaskCompletionSource<bool> tsc = new();
 
-        using NamedPipeServer server = new("PlainlyIpcTests_ConnectAndReconnectTest");
+        using NamedPipeServer server = new(namedPipeName);
         server.DataReceived += (object? sender, DataReceivedEventArgs e) =>
         {
-            e.Data.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(testText));
+            e.Data.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(TestData.Text));
             tsc.SetResult(true);
         };
         server.ErrorOccurred += (object? sender, ErrorOccurredEventArgs e) =>
         {
-            Assert.Fail(e.Message);
+            if (e.ErrorCode != IpcErrorCode.ConnectionLost) { Assert.Fail(e.Message); }
         };
         var serverTask = Task.Run(() => server.StartAsync());
 
-        NamedPipeClient client = new("PlainlyIpcTests_ConnectAndReconnectTest");
+        NamedPipeClient client = new(namedPipeName);
         await client.ConnectAsync();
         client.Dispose();
 
-        client = new("PlainlyIpcTests_ConnectAndReconnectTest");
+        client = new(namedPipeName);
         await client.ConnectAsync();
-        await client.SendAsync(Encoding.UTF8.GetBytes(testText));
+        await client.SendAsync(Encoding.UTF8.GetBytes(TestData.Text));
         client.Dispose();
 
         var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 1));
@@ -73,23 +74,23 @@ public class NamedPipeTest
     [Fact]
     public async Task ServerFailedTest()
     {
-        NamedPipeServer server = new("PlainlyIpcTests_ServerFailedTest");
+        NamedPipeServer server = new(namedPipeName);
 
-        using NamedPipeClient client = new("PlainlyIpcTests_ServerFailedTest");
+        using NamedPipeClient client = new(namedPipeName);
         await client.ConnectAsync();
 
         server.Dispose();
 
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
-            await client.SendAsync(Encoding.UTF8.GetBytes(testText));
+            await client.SendAsync(Encoding.UTF8.GetBytes(TestData.Text));
         });
     }
 
     [Fact]
     public async Task NoServerTest()
     {
-        using NamedPipeClient client = new("PlainlyIpcTests_NoServerTest");
+        using NamedPipeClient client = new(namedPipeName);
 
         await Assert.ThrowsAsync<TimeoutException>(async () =>
         {

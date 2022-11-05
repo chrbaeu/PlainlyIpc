@@ -1,4 +1,6 @@
-﻿namespace PlainlyIpc.IPC;
+﻿using PlainlyIpc.Converter;
+
+namespace PlainlyIpc.IPC;
 
 /// <summary>
 /// Factory for IPC handlers
@@ -6,6 +8,14 @@
 public sealed partial class IpcFactory
 {
     private readonly IObjectConverter objectConverter;
+
+    /// <summary>
+    /// Creates a new IPC factory.
+    /// </summary>
+    public IpcFactory()
+    {
+        this.objectConverter = new JsonObjectConverter();
+    }
 
     /// <summary>
     /// Creates a new IPC factory.

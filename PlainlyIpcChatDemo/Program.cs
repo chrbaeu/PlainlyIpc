@@ -1,7 +1,6 @@
-﻿using PlainlyIpc.Converter;
-using PlainlyIpc.EventArgs;
-using PlainlyIpc.Interfaces;
-using PlainlyIpc.IPC;
+﻿using PlainlyIpc.Rpc;
+using PlainlyIpcChatDemo.IpcDemp;
+using PlainlyIpcChatDemo.RpcDemo;
 
 namespace PlainlyIpcChatDemo;
 
@@ -9,61 +8,29 @@ internal class Program
 {
     public static async Task Main(string[] args)
     {
-        Console.WriteLine($"Starting NampedPipeChat:");
+        IpcFactory ipcFactory = new();
 
-        string myAddress = $"np-{new Random().Next(10, 99)}";
 
-        IObjectConverter objectConverter = new BinaryObjectConverter();
-        IpcFactory ipcFactory = new(objectConverter);
-
-        Console.WriteLine($"You: {myAddress}");
-        // Server
-        IIpcHandler ipcHandler = await ipcFactory.CreateNampedPipeIpcServer(myAddress);
-        ipcHandler.MessageReceived += IpcHandler_ObjectReceived;
-        ipcHandler.ErrorOccurred += IpcHandler_ErrorOccurred;
-
-        Console.WriteLine($"Enter destination or empty to be the server:");
-        var destAddress = Console.ReadLine() ?? "";
-
-        // Client
-        if (!string.IsNullOrWhiteSpace(destAddress))
+        try
         {
-            Console.WriteLine($"Connecting to {destAddress} ...");
-            ipcHandler.Dispose();
-            ipcHandler = await ipcFactory.CreateNampedPipeIpcClient(destAddress);
-            ipcHandler.MessageReceived += IpcHandler_ObjectReceived;
-            ipcHandler.ErrorOccurred += IpcHandler_ErrorOccurred;
+            Console.WriteLine($"Start demo with TCP instead of named pipes (y/n)?");
+            string newServer = Console.ReadLine() ?? "";
+            if (newServer.ToLower() == "y")
+            {
+                await TcpIpcDemo.Run(ipcFactory);
+            }
+            else
+            {
+                await NamedPipeIpcDemo.Run(ipcFactory);
+            }
         }
-
-        Console.WriteLine($"Ready to send messages (Enter 'exit' to exit the app).");
-        while (true)
+        catch (Exception e)
         {
-            var line = Console.ReadLine();
-            if (string.IsNullOrEmpty(line)) { continue; }
-            if (line.ToLower() == "exit") { break; }
-            // Send
-            try
-            {
-                await ipcHandler.SendStringAsync(line);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
+            Console.WriteLine(e.Message);
         }
 
         Console.WriteLine("Chat closed press key to exit app.");
         Console.ReadKey();
-    }
-
-    private static void IpcHandler_ObjectReceived(object? sender, IpcMessageReceivedEventArgs e)
-    {
-        Console.WriteLine(e.Value);
-    }
-
-    private static void IpcHandler_ErrorOccurred(object? sender, ErrorOccurredEventArgs e)
-    {
-        Console.WriteLine(e.Message);
     }
 
 }

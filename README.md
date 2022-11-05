@@ -11,7 +11,7 @@ The basis for serialization and deserialization is the IObjectConverter interfac
 IObjectConverter objectConverter;
 objectConverter = new BinaryObjectConverter();
 objectConverter = new XmlObjectConverter();
-objectConverter = new JsonObjectConverter(); // only for net6.0 and newer
+objectConverter = new JsonObjectConverter(); // standard/recommended
 ```
 
 The basic one-way IPC communication is realized via the IIpcSender and IIpcReceiver interfaces. The IIpcHandler interface relies on these interfaces and enables bidirectional communication and Remote Procedure Calls (RPC).
@@ -22,14 +22,24 @@ IpcFactory ipcFactory = new IpcFactory(objectConverter);
 
 IIpcSender & IIpcReceiver
 ```csharp
-IIpcReceiver receiver = await ipcFactory.CreateNampedPipeIpcReceiver(namedPipeName)
-IIpcSender sender = await ipcFactory.CreateNampedPipeIpcSender(namedPipeName)
+// Named pipe
+IIpcReceiver receiver = await ipcFactory.CreateNampedPipeIpcReceiver(namedPipeName);
+IIpcSender sender = await ipcFactory.CreateNampedPipeIpcSender(namedPipeName);
+
+// TCP
+IIpcReceiver receiver = await ipcFactory.CreateTcpIpcReceiver(namedPipeName);
+IIpcSender sender = await ipcFactory.CreateTcpIpcSender(namedPipeName);
 ```
 
 IpcHandler
 ```csharp
-IIpcHandler server = await ipcFactory.CreateNampedPipeIpcServer(namedPipeName)
-IIpcHandler client = await ipcFactory.CreateNampedPipeIpcClient(namedPipeName)
+// Named pipe
+IIpcHandler server = await ipcFactory.CreateNampedPipeIpcServer(namedPipeName);
+IIpcHandler client = await ipcFactory.CreateNampedPipeIpcClient(namedPipeName);
+
+// TCP
+IIpcHandler server = await ipcFactory.CreateTcpIpcServer(namedPipeName);
+IIpcHandler client = await ipcFactory.CreateTcpIpcClient(namedPipeName);
 ```
 
 The IIpcSender offers the following methods:

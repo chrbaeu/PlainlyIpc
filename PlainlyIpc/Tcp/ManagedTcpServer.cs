@@ -5,7 +5,7 @@ namespace PlainlyIpc.Tcp;
 /// <summary>
 /// TCP server based on the ManagedTcpLister that implenets the IDataHandler interface.
 /// </summary>
-public class ManagedTcpServer : IDataHandler
+public sealed class ManagedTcpServer : IDataHandler
 {
     private readonly ManagedTcpListener tcpListener;
     private readonly List<ManagedTcpClient> clients = new();
@@ -45,6 +45,7 @@ public class ManagedTcpServer : IDataHandler
     /// <inheritdoc/>
     public Task SendAsync(byte[] data)
     {
+        if (!clients.Any()) { throw new InvalidOperationException("There are no clients connected to which data can be sent."); }
         return Task.WhenAll(clients.Select(x => x.SendAsync(data)).ToArray());
     }
 
@@ -55,12 +56,12 @@ public class ManagedTcpServer : IDataHandler
         GC.SuppressFinalize(this);
     }
 
-    private void TcpListener_ErrorOccurred(object sender, ErrorOccurredEventArgs e)
+    private void TcpListener_ErrorOccurred(object? sender, ErrorOccurredEventArgs e)
     {
         ErrorOccurred?.Invoke(this, e);
     }
 
-    private void TcpListener_IncomingTcpClient(object sender, IncomingTcpClientEventArgs e)
+    private void TcpListener_IncomingTcpClient(object? sender, IncomingTcpClientEventArgs e)
     {
         e.TcpClient.DataReceived += TcpClient_DataReceived;
         e.TcpClient.ErrorOccurred += TcpClient_ErrorOccurred;
@@ -68,7 +69,7 @@ public class ManagedTcpServer : IDataHandler
         _ = e.TcpClient.AcceptIncommingData();
     }
 
-    private void TcpClient_ErrorOccurred(object sender, ErrorOccurredEventArgs e)
+    private void TcpClient_ErrorOccurred(object? sender, ErrorOccurredEventArgs e)
     {
         if (sender is ManagedTcpClient client)
         {
@@ -77,7 +78,7 @@ public class ManagedTcpServer : IDataHandler
         ErrorOccurred?.Invoke(sender, e);
     }
 
-    private void TcpClient_DataReceived(object sender, DataReceivedEventArgs e)
+    private void TcpClient_DataReceived(object? sender, DataReceivedEventArgs e)
     {
         DataReceived?.Invoke(sender, e);
     }

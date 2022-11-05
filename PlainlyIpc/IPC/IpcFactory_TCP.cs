@@ -46,7 +46,7 @@ public sealed partial class IpcFactory
         {
             managedTcpClient = new(ipEndPoint);
             ipcSender = new IpcSender(managedTcpClient, objectConverter);
-            await managedTcpClient.ConnectAsync();
+            await managedTcpClient.ConnectAsync().ConfigureAwait(false);
             return ipcSender;
         }
         catch
@@ -86,7 +86,7 @@ public sealed partial class IpcFactory
     /// </summary>
     /// <param name="ipEndPoint">The IP endpoint.</param>
     /// <returns>The IPC handler instance.</returns>
-    public async Task<IIpcHandler> CreatTcpIpcClient(IPEndPoint ipEndPoint)
+    public async Task<IIpcHandler> CreateTcpIpcClient(IPEndPoint ipEndPoint)
     {
         ManagedTcpClient? managedTcpClient = null;
         IIpcHandler? ipcHandler = null;
@@ -94,7 +94,7 @@ public sealed partial class IpcFactory
         {
             managedTcpClient = new(ipEndPoint);
             ipcHandler = new IpcHandler(managedTcpClient, objectConverter);
-            await managedTcpClient.ConnectAsync();
+            await managedTcpClient.ConnectAsync().ConfigureAwait(false);
             _ = managedTcpClient.AcceptIncommingData();
             return ipcHandler;
         }

@@ -9,6 +9,7 @@ public sealed class IpcReceiver : IIpcReceiver, IDisposable
 {
     private readonly IDataReceiver dataReceiver;
     private readonly IObjectConverter objectConverter;
+    private bool isDisposed;
 
     /// <inheritdoc/>
     public event EventHandler<ErrorOccurredEventArgs>? ErrorOccurred;
@@ -31,6 +32,8 @@ public sealed class IpcReceiver : IIpcReceiver, IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
+        if (isDisposed) { return; }
+        isDisposed = true;
         dataReceiver.DataReceived -= DataReceiver_MessageReceived;
         dataReceiver.ErrorOccurred -= DataReceiver_ErrorOccurred;
         dataReceiver.Dispose();

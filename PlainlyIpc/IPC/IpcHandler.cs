@@ -13,6 +13,7 @@ public sealed class IpcHandler : IIpcHandler
     private readonly IpcSender ipcSender;
     private readonly IpcReceiver ipcReceiver;
     private readonly IObjectConverter objectConverter;
+    private bool isDisposed;
 
     /// <summary>
     /// Timeout for remote calls.
@@ -51,50 +52,82 @@ public sealed class IpcHandler : IIpcHandler
     }
 
     /// <inheritdoc/>
-    public Task SendAsync(byte[] data) => ipcSender.SendAsync(data);
+    public async Task SendAsync(byte[] data)
+    {
+        if (isDisposed) { throw new ObjectDisposedException(nameof(IpcHandler)); }
+        if (data is null) { throw new ArgumentNullException(nameof(data)); }
+        await ipcSender.SendAsync(data).ConfigureAwait(false);
+    }
 
     /// <inheritdoc/>
-    public Task SendAsync(ReadOnlyMemory<byte> data) => ipcSender.SendAsync(data);
+    public async Task SendAsync(ReadOnlyMemory<byte> data)
+    {
+        if (isDisposed) { throw new ObjectDisposedException(nameof(IpcHandler)); }
+        await ipcSender.SendAsync(data).ConfigureAwait(false);
+    }
 
     /// <inheritdoc/>
-    public Task SendStringAsync(string data) => ipcSender.SendStringAsync(data);
+    public async Task SendStringAsync(string data)
+    {
+        if (isDisposed) { throw new ObjectDisposedException(nameof(IpcHandler)); }
+        if (data is null) { throw new ArgumentNullException(nameof(data)); }
+        await ipcSender.SendStringAsync(data).ConfigureAwait(false);
+    }
 
     /// <inheritdoc/>
-    public Task SendObjectAsync<T>(T data) => ipcSender.SendObjectAsync<T>(data);
+    public async Task SendObjectAsync<T>(T data)
+    {
+        if (isDisposed) { throw new ObjectDisposedException(nameof(IpcHandler)); }
+        if (data is null) { throw new ArgumentNullException(nameof(data)); }
+        await ipcSender.SendObjectAsync<T>(data).ConfigureAwait(false);
+    }
 
     /// <inheritdoc/>
     public void RegisterService(Type type, object service)
     {
+        if (isDisposed) { throw new ObjectDisposedException(nameof(IpcHandler)); }
+        if (type is null) { throw new ArgumentNullException(nameof(type)); }
+        if (service is null) { throw new ArgumentNullException(nameof(service)); }
         serviceDict.Add(type, service);
     }
 
     /// <inheritdoc/>
     public void RegisterService<TIService>(TIService service) where TIService : notnull
     {
+        if (isDisposed) { throw new ObjectDisposedException(nameof(IpcHandler)); }
+        if (service is null) { throw new ArgumentNullException(nameof(service)); }
         serviceDict.Add(typeof(TIService), service);
     }
 
     /// <inheritdoc/>
-    public Task<TResult> ExecuteRemote<TIRemnoteService, TResult>(Expression<Func<TIRemnoteService, Task<TResult>>> func)
+    public async Task<TResult> ExecuteRemote<TIRemnoteService, TResult>(Expression<Func<TIRemnoteService, Task<TResult>>> func)
     {
-        return ExecuteRemote<TIRemnoteService, TResult>((Expression)func);
+        if (isDisposed) { throw new ObjectDisposedException(nameof(IpcHandler)); }
+        if (func is null) { throw new ArgumentNullException(nameof(func)); }
+        return await ExecuteRemote<TIRemnoteService, TResult>((Expression)func).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public Task<TResult> ExecuteRemote<TIRemnoteService, TResult>(Expression<Func<TIRemnoteService, TResult>> func)
+    public async Task<TResult> ExecuteRemote<TIRemnoteService, TResult>(Expression<Func<TIRemnoteService, TResult>> func)
     {
-        return ExecuteRemote<TIRemnoteService, TResult>((Expression)func);
+        if (isDisposed) { throw new ObjectDisposedException(nameof(IpcHandler)); }
+        if (func is null) { throw new ArgumentNullException(nameof(func)); }
+        return await ExecuteRemote<TIRemnoteService, TResult>((Expression)func).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public Task ExecuteRemote<TIRemnoteService>(Expression<Action<TIRemnoteService>> func)
+    public async Task ExecuteRemote<TIRemnoteService>(Expression<Action<TIRemnoteService>> func)
     {
-        return ExecuteRemote<TIRemnoteService, object>((Expression)func);
+        if (isDisposed) { throw new ObjectDisposedException(nameof(IpcHandler)); }
+        if (func is null) { throw new ArgumentNullException(nameof(func)); }
+        await ExecuteRemote<TIRemnoteService, object>((Expression)func).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public void Dispose()
     {
+        if (isDisposed) { return; }
+        isDisposed = true;
         foreach (var item in tcsDict.ToList())
         {
             tcsDict.Remove(item.Key);
@@ -114,10 +147,10 @@ public sealed class IpcHandler : IIpcHandler
         RemoteCall remoteCall = RemoteMessageHelper.FromCall(typeof(TiRemoteService), func, objectConverter);
         TaskCompletionSource<RemoteResult> result = new();
         tcsDict.Add(remoteCall.Uuid, result);
-        await ipcSender.SendRemoteMessageAsync(remoteCall.AsBytes());
+        await ipcSender.SendRemoteMessageAsync(remoteCall.AsBytes()).ConfigureAwait(false);
         try
         {
-            await result.Task.WaitAsync(RemoteTimeout);
+            await result.Task.WaitAsync(RemoteTimeout).ConfigureAwait(false);
         }
         catch (RemoteException)
         {
@@ -133,7 +166,7 @@ public sealed class IpcHandler : IIpcHandler
         }
         if (result.Task.IsCompleted)
         {
-            return objectConverter.Deserialize<TResult>((await result.Task).ResultData)!;
+            return objectConverter.Deserialize<TResult>((await result.Task.ConfigureAwait(false)).ResultData)!;
         }
         throw new RemoteException("Unexpected error");
     }
@@ -151,8 +184,8 @@ public sealed class IpcHandler : IIpcHandler
             case RemoteCall remoteCall:
                 if (serviceDict.TryGetValue(remoteCall.InterfaceType, out var serviceInstance))
                 {
-                    RemoteMessage result = await RemoteCallExecuter.Execute(remoteCall, serviceInstance, objectConverter);
-                    await ipcSender.SendRemoteMessageAsync(result.AsBytes());
+                    RemoteMessage result = await RemoteCallExecuter.Execute(remoteCall, serviceInstance, objectConverter).ConfigureAwait(false);
+                    await ipcSender.SendRemoteMessageAsync(result.AsBytes()).ConfigureAwait(false);
                 }
                 break;
             case RemoteResult remoteResult:

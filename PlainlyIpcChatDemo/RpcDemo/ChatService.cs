@@ -1,4 +1,4 @@
-﻿namespace PlainlyIpcChatDemo;
+﻿namespace PlainlyIpcChatDemo.RpcDemo;
 
 internal class ChatService : IChatService
 {

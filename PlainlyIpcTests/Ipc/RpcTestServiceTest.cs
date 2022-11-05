@@ -1,19 +1,16 @@
-﻿using PlainlyIpc.Converter;
-using PlainlyIpc.Exceptions;
-using PlainlyIpc.IPC;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace PlainlyIpcTests.Ipc;
 
 public class RpcTestServiceTest : IAsyncLifetime
 {
+    private readonly string namedPipeName = ConnectionAddressFactory.GetNamedPipeName();
     private IIpcHandler server = null!;
     private IIpcHandler client = null!;
 
     public async Task InitializeAsync()
     {
-        IpcFactory ipcFactory = new(new JsonObjectConverter());
-        var namedPipeName = "NampedPipe-" + Guid.NewGuid().ToString();
+        IpcFactory ipcFactory = new();
         server = await ipcFactory.CreateNampedPipeIpcServer(namedPipeName);
         server.RegisterService<IRpcTestService>(new RpcTestService());
         client = await ipcFactory.CreateNampedPipeIpcClient(namedPipeName);
@@ -41,8 +38,14 @@ public class RpcTestServiceTest : IAsyncLifetime
     [Fact]
     public async Task GenericFunctionsTest()
     {
-        var genericResult = await client.ExecuteRemote<IRpcTestService, string>(x => x.Generic("test"));
-        genericResult.Should().Be("test");
+        var genericTextResult = await client.ExecuteRemote<IRpcTestService, string>(x => x.Generic(TestData.Text));
+        genericTextResult.Should().Be(TestData.Text);
+
+        var genericDictResult = await client.ExecuteRemote<IRpcTestService, Dictionary<string, long>>(x => x.Generic(TestData.Dict));
+        genericDictResult.Should().BeEquivalentTo(TestData.Dict);
+
+        var genericModelResult = await client.ExecuteRemote<IRpcTestService, TestDataModel>(x => x.Generic(TestData.Model));
+        genericModelResult.Should().Be(TestData.Model);
     }
 
 
@@ -75,15 +78,15 @@ public class RpcTestServiceTest : IAsyncLifetime
         public int ThrowError(string test) => throw new ArgumentException("ERROR", nameof(test));
     }
 
-}
+    public interface IRpcTestService
+    {
+        public int Add(int a, int b);
+        public void NoResultOp(int x);
+        public Task<int> Sum(IEnumerable<int> values);
+        public IEnumerable<int> Convert(params int[] values);
+        public T Generic<T>(T value);
+        public Task GetTask();
+        public int ThrowError(string test);
+    }
 
-public interface IRpcTestService
-{
-    public int Add(int a, int b);
-    public void NoResultOp(int x);
-    public Task<int> Sum(IEnumerable<int> values);
-    public IEnumerable<int> Convert(params int[] values);
-    public T Generic<T>(T value);
-    public Task GetTask();
-    public int ThrowError(string test);
 }

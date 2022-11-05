@@ -5,6 +5,9 @@ using System.Threading;
 
 namespace PlainlyIpc.Tcp;
 
+/// <summary>
+/// Managed TCP listener class.
+/// </summary>
 public sealed class ManagedTcpListener
 {
     private readonly object lockObject = new();
@@ -89,6 +92,8 @@ public sealed class ManagedTcpListener
         }
     }
 
+    //[DebuggerHidden]
+    //[DebuggerStepThrough]
     [DebuggerNonUserCode]
     private async Task WaitForClient()
     {
@@ -96,7 +101,7 @@ public sealed class ManagedTcpListener
         {
             while (IsListening && !isStopping)
             {
-                TcpClient tcpClient = await tcpListener.AcceptTcpClientAsync();
+                TcpClient tcpClient = await tcpListener.AcceptTcpClientAsync().ConfigureAwait(false);
                 IncomingTcpClient?.Invoke(this, new(new(tcpClient)));
             }
         }

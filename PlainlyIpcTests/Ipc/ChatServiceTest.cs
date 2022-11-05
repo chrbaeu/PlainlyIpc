@@ -1,29 +1,26 @@
-﻿using PlainlyIpc.Converter;
-using PlainlyIpc.IPC;
-
-namespace PlainlyIpcTests.Ipc;
+﻿namespace PlainlyIpcTests.Ipc;
 public class ChatServiceTest
 {
-    private readonly string testText = "Hello World";
-    private readonly IpcFactory ipcFactory = new(new JsonObjectConverter());
+    private readonly string namedPipeName = ConnectionAddressFactory.GetNamedPipeName();
+    private readonly IpcFactory ipcFactory = new();
     private readonly TaskCompletionSource<bool> tsc = new();
 
     [Fact]
-    public async Task ChatServiceBasicsTest()
+    public async Task SendMessageTest()
     {
-        using IIpcHandler handlerS = await ipcFactory.CreateNampedPipeIpcServer(nameof(ChatServiceBasicsTest));
+        using IIpcHandler handlerS = await ipcFactory.CreateNampedPipeIpcServer(namedPipeName);
         handlerS.ErrorOccurred += (sender, e) =>
         {
             tsc.TrySetResult(false);
         };
         handlerS.RegisterService<IChatService>(new ChatService(x =>
         {
-            x.Should().Be(testText);
+            x.Should().Be(TestData.Text);
             tsc.SetResult(true);
         }));
 
-        using IIpcHandler handlerC = await ipcFactory.CreateNampedPipeIpcClient(nameof(ChatServiceBasicsTest));
-        await handlerC.ExecuteRemote<IChatService>(x => x.SendMessage(testText));
+        using IIpcHandler handlerC = await ipcFactory.CreateNampedPipeIpcClient(namedPipeName);
+        await handlerC.ExecuteRemote<IChatService>(x => x.SendMessage(TestData.Text));
 
         var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 1));
         passed.Should().BeTrue();

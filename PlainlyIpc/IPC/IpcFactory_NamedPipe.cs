@@ -45,7 +45,7 @@ public sealed partial class IpcFactory
         {
             namedPipeClient = new(namedPipeName);
             ipcSender = new IpcSender(namedPipeClient, objectConverter);
-            await namedPipeClient.ConnectAsync();
+            await namedPipeClient.ConnectAsync().ConfigureAwait(false);
             return ipcSender;
         }
         catch
@@ -93,7 +93,7 @@ public sealed partial class IpcFactory
         {
             namedPipeClient = new(namedPipeName);
             ipcHandler = new IpcHandler(namedPipeClient, objectConverter);
-            await namedPipeClient.ConnectAsync();
+            await namedPipeClient.ConnectAsync().ConfigureAwait(false);
             return ipcHandler;
         }
         catch

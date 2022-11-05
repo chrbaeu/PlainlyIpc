@@ -1,6 +1,4 @@
-﻿#if NET6_0_OR_GREATER
-
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace PlainlyIpc.Converter;
 
@@ -19,15 +17,16 @@ public sealed class JsonObjectConverter : IObjectConverter
     /// <inheritdoc/>
     public T? Deserialize<T>(byte[] data)
     {
+        if (data is null) { throw new ArgumentNullException(nameof(data)); }
         return JsonSerializer.Deserialize<T>(data);
     }
 
     /// <inheritdoc/>
     public object? Deserialize(byte[] data, Type type)
     {
+        if (data is null) { throw new ArgumentNullException(nameof(data)); }
+        if (type is null) { throw new ArgumentNullException(nameof(type)); }
         return JsonSerializer.Deserialize(data, type);
     }
 
 }
-
-#endif

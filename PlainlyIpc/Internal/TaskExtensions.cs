@@ -5,7 +5,7 @@ internal static class TaskExtensions
     public static async Task WaitAsync(this Task task, TimeSpan timeout)
     {
         var delayTask = Task.Delay(timeout);
-        await Task.WhenAny(task, delayTask);
+        await Task.WhenAny(task, delayTask).ConfigureAwait(false);
         if (!task.IsCompleted) { throw new TimeoutException(); }
     }
 #endif

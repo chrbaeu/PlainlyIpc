@@ -1,4 +1,5 @@
-﻿using System.IO.Pipes;
+﻿using System.IO;
+using System.IO.Pipes;
 using System.Threading;
 
 namespace PlainlyIpc.NamedPipe;
@@ -6,10 +7,11 @@ namespace PlainlyIpc.NamedPipe;
 /// <summary>
 /// Named pipe server implementing IDataHandler.
 /// </summary>
-public sealed class NamedPipeServer : IDataHandler, IDisposable
+internal sealed class NamedPipeServer : IDataHandler, IDisposable
 {
     private readonly CancellationTokenSource cancellationTokenSource = new();
     private NamedPipeServerStream server;
+    private bool isDisposed;
 
     /// <inheritdoc/>
     public event EventHandler<DataReceivedEventArgs>? DataReceived;
@@ -26,6 +28,11 @@ public sealed class NamedPipeServer : IDataHandler, IDisposable
     /// Indicates if the named pipe server listens for incoming data. 
     /// </summary>
     public bool IsActive { get; private set; }
+
+    /// <summary>
+    /// Indicates if the named pipe server is connected to a client.
+    /// </summary>
+    public bool IsConnected { get; private set; }
 
     /// <summary>
     /// Creates a named pipe server for the given named pipe name.
@@ -50,6 +57,7 @@ public sealed class NamedPipeServer : IDataHandler, IDisposable
     /// <inheritdoc/>
     public async Task SendAsync(byte[] data)
     {
+        if (data is null) { throw new ArgumentNullException(nameof(data)); }
         if (!IsActive) { throw new InvalidOperationException($"{nameof(NamedPipeServer)} must be active to send data!"); }
         await server.WriteAsync(BitConverter.GetBytes(data.Length)).ConfigureAwait(false);
         await server.WriteAsync(data).ConfigureAwait(false);
@@ -58,9 +66,13 @@ public sealed class NamedPipeServer : IDataHandler, IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
+        if (isDisposed) { return; }
+        isDisposed = true;
         IsActive = false;
+        IsConnected = false;
         cancellationTokenSource.Cancel();
         server.Dispose();
+        cancellationTokenSource.Dispose();
         GC.SuppressFinalize(this);
     }
 
@@ -71,10 +83,16 @@ public sealed class NamedPipeServer : IDataHandler, IDisposable
             while (IsActive)
             {
                 await server.WaitForConnectionAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+                IsConnected = true;
                 await AcceptIncommingData().ConfigureAwait(false);
                 if (IsActive)
                 {
+#if NETSTANDARD2_0
                     server.Dispose();
+#else
+                    await server.DisposeAsync().ConfigureAwait(false);
+#endif
+                    IsConnected = false;
                     server = new(NamedPipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
                 }
             }
@@ -94,7 +112,15 @@ public sealed class NamedPipeServer : IDataHandler, IDisposable
             byte[] lenArray = new byte[4];
             while (IsActive)
             {
-                await server.ReadExactly(lenArray, 4, cancellationTokenSource.Token).ConfigureAwait(false);
+                try
+                {
+                    await server.ReadExactly(lenArray, 4, cancellationTokenSource.Token).ConfigureAwait(false);
+                }
+                catch (EndOfStreamException e)
+                {
+                    ErrorOccurred?.Invoke(this, new(IpcErrorCode.ConnectionLost, "The connection to the client was lost.", e));
+                    break;
+                }
                 var dataLen = BitConverter.ToInt32(lenArray, 0);
                 if (dataLen == -1) { break; }
                 byte[] dataArray = new byte[dataLen];
@@ -103,10 +129,10 @@ public sealed class NamedPipeServer : IDataHandler, IDisposable
                 DataReceived?.Invoke(this, dataReceivedEventArgs);
             }
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException) { /* The server is stopped */  }
         catch (Exception e)
         {
-            ErrorOccurred?.Invoke(this, new(0, "An error occurred while reading the received data.", e));
+            ErrorOccurred?.Invoke(this, new(IpcErrorCode.UnexpectedError, "An error occurred while reading the received data.", e));
         }
     }
 

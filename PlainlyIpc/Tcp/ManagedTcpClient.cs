@@ -5,6 +5,9 @@ using System.Threading;
 
 namespace PlainlyIpc.Tcp;
 
+/// <summary>
+/// Managed TCP client class.
+/// </summary>
 public sealed class ManagedTcpClient : IDataHandler
 {
     private readonly CancellationTokenSource cancellationTokenSource = new();
@@ -80,6 +83,7 @@ public sealed class ManagedTcpClient : IDataHandler
     /// <param name="tcpClient"></param>
     public ManagedTcpClient(TcpClient tcpClient)
     {
+        if (tcpClient is null) { throw new ArgumentNullException(nameof(tcpClient)); }
         if (!tcpClient.Connected)
         {
             throw new ArgumentException("Socket is not connected!", nameof(tcpClient));
@@ -103,10 +107,10 @@ public sealed class ManagedTcpClient : IDataHandler
         try
         {
 #if NETSTANDARD
-            await tcpClient.ConnectAsync(Endpoint.Address, Endpoint.Port).WaitAsync(new(0, 0, 0, 0, connectionTimeout));
+            await tcpClient.ConnectAsync(Endpoint.Address, Endpoint.Port).WaitAsync(new(0, 0, 0, 0, connectionTimeout)).ConfigureAwait(false);
 #else
-            CancellationTokenSource cts = new(connectionTimeout);
-            await tcpClient.ConnectAsync(Endpoint.Address, Endpoint.Port, cts.Token);
+            using CancellationTokenSource cts = new(connectionTimeout);
+            await tcpClient.ConnectAsync(Endpoint.Address, Endpoint.Port, cts.Token).ConfigureAwait(false);
 #endif
         }
         catch (OperationCanceledException e)
@@ -117,6 +121,9 @@ public sealed class ManagedTcpClient : IDataHandler
         networkStream = tcpClient.GetStream();
     }
 
+    /// <summary>
+    /// Activates the receiving of incoming data
+    /// </summary>
     public async Task AcceptIncommingData()
     {
         if (!IsConnected || networkStream is null) { throw new InvalidOperationException("AcceptIncommingData requires a open connection."); }
@@ -125,7 +132,7 @@ public sealed class ManagedTcpClient : IDataHandler
             byte[] lenArray = new byte[4];
             while (IsConnected && !isClosing)
             {
-                await networkStream.ReadExactly(lenArray, 4, cancellationTokenSource.Token);
+                await networkStream.ReadExactly(lenArray, 4, cancellationTokenSource.Token).ConfigureAwait(false);
                 var dataLen = BitConverter.ToInt32(lenArray, 0);
                 if (dataLen == -1)
                 {
@@ -134,7 +141,7 @@ public sealed class ManagedTcpClient : IDataHandler
                 }
                 byte[] dataArray = new byte[dataLen];
                 DataReceivedEventArgs dataReceivedEventArgs = new(dataArray);
-                await networkStream.ReadExactly(dataArray, dataLen, cancellationTokenSource.Token);
+                await networkStream.ReadExactly(dataArray, dataLen, cancellationTokenSource.Token).ConfigureAwait(false);
                 DataReceived?.Invoke(this, dataReceivedEventArgs);
             }
             Disconnect();
@@ -161,7 +168,7 @@ public sealed class ManagedTcpClient : IDataHandler
         Disconnect("Connection closed.");
     }
 
-    public void Disconnect(string reason, Exception? exception = null)
+    private void Disconnect(string reason, Exception? exception = null)
     {
         if (!IsConnected || isClosing) { return; }
         isClosing = true;
@@ -186,12 +193,13 @@ public sealed class ManagedTcpClient : IDataHandler
     /// <param name="data">The memory of bytes to send.</param>
     public async Task SendAsync(byte[] data)
     {
+        if (data is null) { throw new ArgumentNullException(nameof(data)); }
         if (!IsConnected || networkStream is null) { throw new InvalidOperationException("Sending data requires a open connection."); }
         try
         {
 
-            await networkStream.WriteAsync(BitConverter.GetBytes(data.Length));
-            await networkStream.WriteAsync(data);
+            await networkStream.WriteAsync(BitConverter.GetBytes(data.Length)).ConfigureAwait(false);
+            await networkStream.WriteAsync(data).ConfigureAwait(false);
             return;
         }
         catch (Exception e)
@@ -201,10 +209,12 @@ public sealed class ManagedTcpClient : IDataHandler
         throw new InvalidOperationException("Data could not be sent. An existing connection is required.");
     }
 
+    /// <inheritdoc/>
     public void Dispose()
     {
         Disconnect();
         tcpClient.Dispose();
+        cancellationTokenSource.Dispose();
         GC.SuppressFinalize(this);
     }
 

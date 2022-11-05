@@ -7,10 +7,11 @@ namespace PlainlyIpc.NamedPipe;
 /// <summary>
 /// Named pipe client implementing IDataHandler.
 /// </summary>
-public sealed class NamedPipeClient : IDataHandler, IDisposable
+internal sealed class NamedPipeClient : IDataHandler, IDisposable
 {
     private readonly CancellationTokenSource cancellationTokenSource = new();
     private readonly NamedPipeClientStream client;
+    private bool isDisposed;
 
     /// <inheritdoc/>
     public event EventHandler<DataReceivedEventArgs>? DataReceived;
@@ -24,9 +25,14 @@ public sealed class NamedPipeClient : IDataHandler, IDisposable
     public string NamedPipeName { get; }
 
     /// <summary>
-    /// Indicates if the named pipe server listens for incoming data. 
+    /// Indicates if the named pipe client listens for incoming data. 
     /// </summary>
     public bool IsActive { get; private set; }
+
+    /// <summary>
+    /// Indicates if the named pipe client is connected to a server.
+    /// </summary>
+    public bool IsConnected { get; private set; }
 
     /// <summary>
     /// Creates a named pipe client for the given named pipe name.
@@ -60,12 +66,14 @@ public sealed class NamedPipeClient : IDataHandler, IDisposable
             throw new IOException($"Connecting to named pipe '{NamedPipeName}' failed!");
         }
         IsActive = true;
+        IsConnected = true;
         _ = AcceptIncommingData();
     }
 
     /// <inheritdoc/>
     public async Task SendAsync(byte[] data)
     {
+        if (data is null) { throw new ArgumentNullException(nameof(data)); }
         if (!IsActive) { throw new InvalidOperationException($"{nameof(NamedPipeClient)} must be active to send data!"); }
         await client.WriteAsync(BitConverter.GetBytes(data.Length)).ConfigureAwait(false);
         await client.WriteAsync(data).ConfigureAwait(false);
@@ -74,18 +82,13 @@ public sealed class NamedPipeClient : IDataHandler, IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
+        if (isDisposed) { return; }
+        isDisposed = true;
         IsActive = false;
+        IsConnected = false;
         cancellationTokenSource.Cancel();
-        if (client.IsConnected)
-        {
-            try
-            {
-                client.Write(BitConverter.GetBytes(-1), 0, 4);
-                client.Flush();
-            }
-            catch { }
-        }
         client.Dispose();
+        cancellationTokenSource.Dispose();
         GC.SuppressFinalize(this);
     }
 
@@ -106,10 +109,15 @@ public sealed class NamedPipeClient : IDataHandler, IDisposable
             }
         }
         catch (OperationCanceledException) { }
+        catch (EndOfStreamException e)
+        {
+            ErrorOccurred?.Invoke(this, new(IpcErrorCode.ConnectionLost, "The connection to the server was lost.", e));
+        }
         catch (Exception e)
         {
-            ErrorOccurred?.Invoke(this, new(0, "An error occurred while reading the received data.", e));
+            ErrorOccurred?.Invoke(this, new(IpcErrorCode.UnexpectedError, "An error occurred while reading the received data.", e));
         }
+        IsConnected = false;
         IsActive = false;
     }
 
