@@ -1,4 +1,5 @@
 ﻿using PlainlyIpcChatDemo.IpcDemp;
+using PlainlyIpcChatDemo.RpcDemo;
 
 namespace PlainlyIpcChatDemo;
 

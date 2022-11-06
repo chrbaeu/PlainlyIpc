@@ -61,6 +61,8 @@ public class NamedPipeTest
         await client.ConnectAsync();
         client.Dispose();
 
+        await Task.Delay(1);
+
         client = new(namedPipeName);
         await client.ConnectAsync();
         await client.SendAsync(Encoding.UTF8.GetBytes(TestData.Text));

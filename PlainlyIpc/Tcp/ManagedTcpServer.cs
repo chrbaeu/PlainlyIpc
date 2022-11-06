@@ -58,6 +58,8 @@ internal sealed class ManagedTcpServer : IDataHandler
         isDisposed = true;
         tcpListener.Stop();
         tcpListener.Dispose();
+        DataReceived = null;
+        ErrorOccurred = null;
         GC.SuppressFinalize(this);
     }
 
@@ -77,6 +79,8 @@ internal sealed class ManagedTcpServer : IDataHandler
     {
         if (sender is ManagedTcpClient client)
         {
+            client.DataReceived -= TcpClient_DataReceived;
+            client.ErrorOccurred -= TcpClient_ErrorOccurred;
             clients.Remove(client);
         }
         ErrorOccurred?.Invoke(sender, e);

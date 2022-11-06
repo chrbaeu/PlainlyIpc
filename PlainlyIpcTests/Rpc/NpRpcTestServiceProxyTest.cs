@@ -2,7 +2,7 @@
 
 namespace PlainlyIpcTests.Rpc;
 
-public class RpcTestServiceProxyTest : IAsyncLifetime
+public class NpRpcTestServiceProxyTest : IAsyncLifetime
 {
     private readonly string namedPipeName = ConnectionAddressFactory.GetNamedPipeName();
     private IIpcHandler server = null!;

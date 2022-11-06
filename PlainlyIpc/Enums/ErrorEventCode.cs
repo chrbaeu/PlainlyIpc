@@ -16,7 +16,17 @@ public enum ErrorEventCode
     None = 0,
 
     /// <summary>
+    /// A event handlers has thrown an exception
+    /// </summary>
+    EventHandlerError = 1,
+
+    /// <summary>
+    /// An error occurred while processing data.
+    /// </summary>
+    DataProcessingError = 100,
+
+    /// <summary>
     /// Unexpected error.
     /// </summary>
-    UnexpectedError = 1,
+    UnexpectedError = 1000,
 }

@@ -88,6 +88,7 @@ internal sealed class ManagedTcpListener : IDisposable
         cancellationTokenSource.Cancel();
         tcpListener.Stop();
         cancellationTokenSource.Dispose();
+        ErrorOccurred = null;
     }
 
     private async Task WaitForClient()
@@ -102,7 +103,14 @@ internal sealed class ManagedTcpListener : IDisposable
 #else
                 TcpClient tcpClient = await tcpListener.AcceptTcpClientAsync(cancellationTokenSource.Token).ConfigureAwait(false);
 #endif
-                IncomingTcpClient?.Invoke(this, new(new(tcpClient)));
+                IncomingTcpClientEventArgs eventArgs = new(new(tcpClient));
+                _ = Task.Run(() => IncomingTcpClient?.Invoke(this, eventArgs)).ContinueWith(x =>
+                {
+                    if (x.IsFaulted)
+                    {
+                        ErrorOccurred?.Invoke(this, new(ErrorEventCode.EventHandlerError, "Calling the event handlers has thrown an exception.", x.Exception));
+                    }
+                }, TaskScheduler.Default);
             }
             IsListening = false;
         }

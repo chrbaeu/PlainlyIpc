@@ -1,4 +1,5 @@
 ﻿using PlainlyIpc.Rpc;
+using System.Diagnostics;
 using System.Linq.Expressions;
 
 namespace PlainlyIpc.IPC;
@@ -18,7 +19,7 @@ public sealed class IpcHandler : IIpcHandler
     /// <summary>
     /// Timeout for remote calls.
     /// </summary>
-    public TimeSpan RemoteTimeout { get; set; } = new TimeSpan(0, 0, 5);
+    public TimeSpan RemoteTimeout { get; set; } = new TimeSpan(0, 0, 10);
 
     /// <inheritdoc/>
     public event EventHandler<ErrorOccurredEventArgs>? ErrorOccurred;
@@ -142,15 +143,20 @@ public sealed class IpcHandler : IIpcHandler
         GC.SuppressFinalize(this);
     }
 
-    private async Task<TResult> ExecuteRemote<TiRemoteService, TResult>(Expression func)
+    private async Task<TResult> ExecuteRemote<TIRemoteService, TResult>(Expression func)
     {
-        RemoteCall remoteCall = RemoteMessageHelper.FromCall(typeof(TiRemoteService), func, objectConverter);
-        TaskCompletionSource<RemoteResult> result = new();
-        tcsDict.Add(remoteCall.Uuid, result);
+        Debug.WriteLine("#>ExecuteRemote");
+        RemoteCall remoteCall = RemoteMessageHelper.FromCall(typeof(TIRemoteService), func, objectConverter);
+        TaskCompletionSource<RemoteResult> resultTcs = new();
+        tcsDict.Add(remoteCall.Uuid, resultTcs);
+        Debug.WriteLine("#>ExecuteRemote>SendCall");
         await ipcSender.SendRemoteMessageAsync(remoteCall.AsBytes()).ConfigureAwait(false);
+        Debug.WriteLine("#>ExecuteRemote>Call sended");
         try
         {
-            await result.Task.WaitAsync(RemoteTimeout).ConfigureAwait(false);
+            Debug.WriteLine("#>ExecuteRemote>Wait for result");
+            await resultTcs.Task.WaitAsync(RemoteTimeout).ConfigureAwait(false);
+            Debug.WriteLine("#>ExecuteRemote>Got result");
         }
         catch (RemoteException)
         {
@@ -164,15 +170,17 @@ public sealed class IpcHandler : IIpcHandler
         {
             throw new RemoteException("Unexpected error", e);
         }
-        if (result.Task.IsCompleted)
+        if (resultTcs.Task.IsCompleted)
         {
-            return objectConverter.Deserialize<TResult>((await result.Task.ConfigureAwait(false)).ResultData)!;
+            Debug.WriteLine("#>ExecuteRemote>Deserialize");
+            return objectConverter.Deserialize<TResult>(resultTcs.Task.GetAwaiter().GetResult().ResultData)!;
         }
         throw new RemoteException("Unexpected error");
     }
 
     private async void Receiver_MessageReceived(object? sender, IpcMessageReceivedEventArgs e)
     {
+        Debug.WriteLine("#>Receiver_MessageReceived");
         if (e.MsgType != IpcMessageType.RemoteMessage)
         {
             MessageReceived?.Invoke(this, e);

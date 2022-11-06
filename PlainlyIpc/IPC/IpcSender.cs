@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using System.Threading;
 
 namespace PlainlyIpc.IPC;
@@ -35,7 +36,7 @@ public sealed class IpcSender : IIpcSender
             using MemoryStream memoryStream = new();
             memoryStream.WriteByte((byte)IpcMessageType.RawData);
             memoryStream.Write(data);
-            await dataSender.SendAsync(memoryStream.ToArray()).ConfigureAwait(false); ;
+            await dataSender.SendAsync(memoryStream.ToArray()).ConfigureAwait(false);
         }
         catch (Exception e)
         {
@@ -126,13 +127,16 @@ public sealed class IpcSender : IIpcSender
     {
         if (isDisposed) { throw new ObjectDisposedException(nameof(IpcSender)); }
         if (data is null) { throw new ArgumentNullException(nameof(data)); }
+        Debug.WriteLine("#>SendRemoteMessageAsync Get lock");
         await semaphoreSlim.WaitAsync().ConfigureAwait(false);
         try
         {
+            Debug.WriteLine("#>SendRemoteMessageAsync send");
             using MemoryStream memoryStream = new();
             memoryStream.WriteByte((byte)IpcMessageType.RemoteMessage);
             memoryStream.Write(data);
             await dataSender.SendAsync(memoryStream.ToArray()).ConfigureAwait(false);
+            Debug.WriteLine("#>SendRemoteMessageAsync sended");
         }
         catch (Exception e)
         {

@@ -69,7 +69,7 @@ public sealed class IpcReceiver : IIpcReceiver, IDisposable
         }
         catch (Exception e)
         {
-            ErrorOccurred?.Invoke(this, new ErrorOccurredEventArgs(0, "Processing of received data failed.", e));
+            ErrorOccurred?.Invoke(this, new ErrorOccurredEventArgs(ErrorEventCode.DataProcessingError, "Processing of received data failed.", e));
             return;
         }
         MessageReceived?.Invoke(this, new IpcMessageReceivedEventArgs(msgType, data, type));

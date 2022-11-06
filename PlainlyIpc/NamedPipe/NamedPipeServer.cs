@@ -138,7 +138,14 @@ internal sealed class NamedPipeServer : IDataHandler, IDisposable
                 int dataLen = BitConverter.ToInt32(lenArray, 0);
                 byte[] dataArray = new byte[dataLen];
                 await server.ReadExactly(dataArray, dataLen, cancellationTokenSource.Token).ConfigureAwait(false);
-                DataReceived?.Invoke(this, new(dataArray));
+                DataReceivedEventArgs eventArgs = new(dataArray);
+                _ = Task.Run(() => DataReceived?.Invoke(this, eventArgs)).ContinueWith(x =>
+                {
+                    if (x.IsFaulted)
+                    {
+                        ErrorOccurred?.Invoke(this, new(ErrorEventCode.EventHandlerError, "Calling the event handlers has thrown an exception.", x.Exception));
+                    }
+                }, TaskScheduler.Default);
             }
         }
         catch (OperationCanceledException)
