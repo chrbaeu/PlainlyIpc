@@ -136,6 +136,7 @@ internal sealed class ManagedTcpClient : IDataHandler
         {
             await networkStream.WriteAsync(BitConverter.GetBytes(data.Length)).ConfigureAwait(false);
             await networkStream.WriteAsync(data).ConfigureAwait(false);
+            await networkStream.FlushAsync().ConfigureAwait(false);
         }
         catch (Exception)
         {

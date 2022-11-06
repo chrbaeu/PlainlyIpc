@@ -6,12 +6,11 @@ namespace PlainlyIpcTests.NamedPipe;
 public class NamedPipeTest
 {
     private readonly string namedPipeName = ConnectionAddressFactory.GetNamedPipeName();
+    private readonly TaskCompletionSource<bool> tsc = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     [Fact]
     public async Task SendAndReciveData()
     {
-        TaskCompletionSource<bool> tsc = new();
-
         using NamedPipeServer server = new(namedPipeName);
         server.DataReceived += (object? sender, DataReceivedEventArgs e) =>
         {
@@ -43,8 +42,6 @@ public class NamedPipeTest
     [Fact]
     public async Task ConnectAndReconnectTest()
     {
-        TaskCompletionSource<bool> tsc = new();
-
         using NamedPipeServer server = new(namedPipeName);
         server.DataReceived += (object? sender, DataReceivedEventArgs e) =>
         {
@@ -61,7 +58,7 @@ public class NamedPipeTest
         await client.ConnectAsync();
         client.Dispose();
 
-        await Task.Delay(1);
+        await Task.Delay(10);
 
         client = new(namedPipeName);
         await client.ConnectAsync();

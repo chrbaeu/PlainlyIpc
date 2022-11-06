@@ -4,6 +4,7 @@ global using PlainlyIpc.Enums;
 global using PlainlyIpc.EventArgs;
 global using PlainlyIpc.Exceptions;
 global using PlainlyIpc.Interfaces;
+global using PlainlyIpc.Internal;
 global using PlainlyIpc.IPC;
 global using PlainlyIpcTests.Helper;
 global using System;

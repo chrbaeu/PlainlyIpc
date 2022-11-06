@@ -5,7 +5,7 @@ public class ChatServiceNpTest
 {
     private readonly string namedPipeName = ConnectionAddressFactory.GetNamedPipeName();
     private readonly IpcFactory ipcFactory = new();
-    private readonly TaskCompletionSource<bool> tsc = new();
+    private readonly TaskCompletionSource<bool> tsc = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     [Fact]
     public async Task SendMessageTest()

@@ -6,7 +6,7 @@ public class NamedPipeIpcHandlerTest
 {
     private readonly string namedPipeName = ConnectionAddressFactory.GetNamedPipeName();
     private readonly IpcFactory ipcFactory = new();
-    private readonly TaskCompletionSource<bool> tsc = new();
+    private readonly TaskCompletionSource<bool> tsc = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     [Fact]
     public async Task CtoSTest()
@@ -84,7 +84,7 @@ public class NamedPipeIpcHandlerTest
         await handlerC.SendStringAsync(TestData.Text);
         handlerC.Dispose();
 
-        await Task.Delay(100);
+        await Task.Delay(10);
 
         handlerC = await ipcFactory.CreateNampedPipeIpcClient(namedPipeName);
         await handlerC.SendStringAsync(TestData.Text);

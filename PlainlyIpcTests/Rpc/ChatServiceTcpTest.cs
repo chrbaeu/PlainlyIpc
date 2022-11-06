@@ -6,7 +6,7 @@ namespace PlainlyIpcTests.Rpc;
 public class ChatServiceTcpTest : IAsyncLifetime
 {
     private readonly IPEndPoint ipEndPoint = ConnectionAddressFactory.GetIpEndPoint();
-    private readonly TaskCompletionSource<bool> tsc = new();
+    private readonly TaskCompletionSource<bool> tsc = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private IIpcHandler server = null!;
     private IIpcHandler client = null!;
 

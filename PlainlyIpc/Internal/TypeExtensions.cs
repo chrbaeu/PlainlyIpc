@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace PlainlyIpc.Internal;
 
@@ -26,19 +27,46 @@ internal static class TypeExtensions
         var type = Type.GetType(match.Groups[2].Value);
         if (type is null)
         {
-            var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.FullName == match.Groups[1].Value);
+            var assemplyFilterString = match.Groups[1].Value + ",";
+            Func<Assembly, bool> predicate = x => x.FullName?.StartsWith(assemplyFilterString, StringComparison.Ordinal) ?? false;
+            var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(predicate);
             if (assembly is null)
             {
-                assembly = AppDomain.CurrentDomain.Load(match.Groups[1].Value);
+                var assemblies = GetAssemblies();
+                var refAssembly = assemblies.FirstOrDefault(predicate);
+                assembly = AppDomain.CurrentDomain.Load(refAssembly?.FullName ?? match.Groups[1].Value);
             }
             type = assembly?.GetType(match.Groups[2].Value);
         }
         if (type is not null && !string.IsNullOrEmpty(match.Groups[4].Value))
         {
             var genericArguments = SplitGenericTypeArguments(match.Groups[4].Value);
-            type = type.MakeGenericType(genericArguments.Select(x => GetTypeFromTypeString(x)).ToArray());
+            type = type.MakeGenericType(genericArguments.Select(GetTypeFromTypeString).ToArray());
         }
         return type ?? throw new ArgumentException("Invalid type info!", nameof(typeInfo));
+    }
+
+    private static List<Assembly> GetAssemblies()
+    {
+        var returnAssemblies = new List<Assembly>();
+        var loadedAssemblies = new HashSet<string>();
+        var assembliesToCheck = new Queue<Assembly>();
+        assembliesToCheck.Enqueue(Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly());
+        while (assembliesToCheck.Any())
+        {
+            var assemblyToCheck = assembliesToCheck.Dequeue();
+            foreach (var reference in assemblyToCheck.GetReferencedAssemblies())
+            {
+                if (!loadedAssemblies.Contains(reference.FullName))
+                {
+                    var assembly = Assembly.Load(reference);
+                    assembliesToCheck.Enqueue(assembly);
+                    loadedAssemblies.Add(reference.FullName);
+                    returnAssemblies.Add(assembly);
+                }
+            }
+        }
+        return returnAssemblies;
     }
 
     private static List<string> SplitGenericTypeArguments(string genericArguments)

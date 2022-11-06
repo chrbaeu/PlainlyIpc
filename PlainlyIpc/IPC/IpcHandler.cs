@@ -147,7 +147,7 @@ public sealed class IpcHandler : IIpcHandler
     {
         Debug.WriteLine("#>ExecuteRemote");
         RemoteCall remoteCall = RemoteMessageHelper.FromCall(typeof(TIRemoteService), func, objectConverter);
-        TaskCompletionSource<RemoteResult> resultTcs = new();
+        TaskCompletionSource<RemoteResult> resultTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
         tcsDict.Add(remoteCall.Uuid, resultTcs);
         Debug.WriteLine("#>ExecuteRemote>SendCall");
         await ipcSender.SendRemoteMessageAsync(remoteCall.AsBytes()).ConfigureAwait(false);

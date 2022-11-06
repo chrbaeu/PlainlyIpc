@@ -7,7 +7,7 @@ public class TcpHandlerTest
 {
     private readonly IPEndPoint ipEndPoint = ConnectionAddressFactory.GetIpEndPoint();
     private readonly IpcFactory ipcFactory = new();
-    private readonly TaskCompletionSource<bool> tsc = new();
+    private readonly TaskCompletionSource<bool> tsc = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     [Fact]
     public async Task CtoSTest()
@@ -85,7 +85,7 @@ public class TcpHandlerTest
         await handlerC.SendStringAsync(TestData.Text);
         handlerC.Dispose();
 
-        await Task.Delay(100);
+        await Task.Delay(10);
 
         handlerC = await ipcFactory.CreateTcpIpcClient(ipEndPoint);
         await handlerC.SendStringAsync(TestData.Text);

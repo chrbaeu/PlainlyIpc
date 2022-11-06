@@ -7,7 +7,7 @@ namespace PlainlyIpcTests.NamedPipe;
 public class TcpTest
 {
     private readonly IPEndPoint ipEndPoint = ConnectionAddressFactory.GetIpEndPoint();
-    private TaskCompletionSource<bool> tsc = new();
+    private TaskCompletionSource<bool> tsc = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     [Fact]
     public async Task SendAndReciveData()

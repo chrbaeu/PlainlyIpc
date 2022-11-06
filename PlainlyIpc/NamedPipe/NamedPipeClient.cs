@@ -75,6 +75,7 @@ internal sealed class NamedPipeClient : IDataHandler, IDisposable
         {
             await client.WriteAsync(BitConverter.GetBytes(data.Length)).ConfigureAwait(false);
             await client.WriteAsync(data).ConfigureAwait(false);
+            await client.FlushAsync().ConfigureAwait(false);
         }
         catch (Exception)
         {
