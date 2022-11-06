@@ -9,7 +9,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Title>PlainlyIpc</Title>
     <PackageId>Chriffizient.PlainlyIpc</PackageId>
-    <Version>0.3.0</Version>
+    <Version>0.4.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>icon.png</PackageIcon>
     <Description>A minimalistic, easy-to-use library for interprocess communication (IPC) with .NET.</Description>

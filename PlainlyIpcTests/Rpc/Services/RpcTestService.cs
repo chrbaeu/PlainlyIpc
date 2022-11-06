@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace PlainlyIpcTests.Rpc;
+namespace PlainlyIpcTests.Rpc.Services;
 
 internal class RpcTestService : IRpcTestService
 {

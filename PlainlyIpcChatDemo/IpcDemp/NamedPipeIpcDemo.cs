@@ -12,9 +12,9 @@ internal class NamedPipeIpcDemo
         IIpcHandler ipcHandler;
         Console.WriteLine($"Start a new server (y/n)?");
         var newServer = Console.ReadLine() ?? "";
-        if (newServer.ToLower() == "y")
+        if ("y".Equals(newServer, StringComparison.OrdinalIgnoreCase))
         {
-            var myAddress = $"np-{new Random().Next(10, 99)}";
+            var myAddress = $"np-ipc-chat";
             Console.WriteLine($"Server name/address: {myAddress}");
             ipcHandler = await ipcFactory.CreateNampedPipeIpcServer(myAddress);
             Console.WriteLine("Server is running ...");
@@ -35,7 +35,7 @@ internal class NamedPipeIpcDemo
         {
             var line = Console.ReadLine();
             if (string.IsNullOrEmpty(line)) { continue; }
-            if (line.ToLower() == "exit") { break; }
+            if ("exit".Equals(line, StringComparison.OrdinalIgnoreCase)) { break; }
             await ipcHandler.SendStringAsync(line);
         }
         ipcHandler.Dispose();

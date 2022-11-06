@@ -13,7 +13,7 @@ internal class Program
         {
             Console.WriteLine($"Start demo with TCP instead of named pipes (y/n)?");
             string newServer = Console.ReadLine() ?? "";
-            if (newServer.ToLower() == "y")
+            if ("y".Equals(newServer, StringComparison.OrdinalIgnoreCase))
             {
                 await TcpRpcDemo.Run(ipcFactory);
             }

@@ -122,7 +122,7 @@ public class TcpTest
         };
         client.ErrorOccurred += (object? sender, ErrorOccurredEventArgs e) =>
         {
-            Assert.Equal(e.ErrorCode, ErrorEventCode.ConnectionLost);
+            Assert.Equal(ErrorEventCode.ConnectionLost, e.ErrorCode);
         };
         await client.ConnectAsync();
 

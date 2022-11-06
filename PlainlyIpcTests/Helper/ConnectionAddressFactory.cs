@@ -1,11 +1,11 @@
 ﻿using System.Net;
 using System.Threading;
 
-namespace PlainlyIpcTests.Shared;
+namespace PlainlyIpcTests.Helper;
 
 internal class ConnectionAddressFactory
 {
-    private static volatile int portCounter = 0;
+    private static volatile int portCounter;
 
     public static IPEndPoint GetIpEndPoint()
     {

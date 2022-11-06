@@ -1,6 +1,6 @@
-﻿namespace PlainlyIpcTests.Rpc.PlainlyIpcProxies;
+﻿namespace PlainlyIpcTests.Rpc.Services;
 
-public class RpcTestServiceRemoteProxy : PlainlyIpcTests.Rpc.IRpcTestService
+public class RpcTestServiceRemoteProxy : IRpcTestService
 {
     private readonly IIpcHandler ipcHandler;
 
@@ -10,44 +10,44 @@ public class RpcTestServiceRemoteProxy : PlainlyIpcTests.Rpc.IRpcTestService
     }
 
     [Obsolete("Remote calls are asynchronous, use the asynchronous version!")]
-    public Int32 Add(Int32 a, Int32 b)
+    public int Add(int a, int b)
     {
         return Task.Run(() => AddAsync(a, b)).GetAwaiter().GetResult();
     }
 
-    public async Task<Int32> AddAsync(Int32 a, Int32 b)
+    public async Task<int> AddAsync(int a, int b)
     {
-        return await ipcHandler.ExecuteRemote<PlainlyIpcTests.Rpc.IRpcTestService, Int32>(plainlyRpcService
+        return await ipcHandler.ExecuteRemote<IRpcTestService, int>(plainlyRpcService
             => plainlyRpcService.Add(a, b));
     }
 
     [Obsolete("Remote calls are asynchronous, use the asynchronous version!")]
-    public void NoResultOp(Int32 x)
+    public void NoResultOp(int x)
     {
         Task.Run(() => NoResultOpAsync(x)).GetAwaiter().GetResult();
     }
 
-    public async Task NoResultOpAsync(Int32 x)
+    public async Task NoResultOpAsync(int x)
     {
-        await ipcHandler.ExecuteRemote<PlainlyIpcTests.Rpc.IRpcTestService>(plainlyRpcService
+        await ipcHandler.ExecuteRemote<IRpcTestService>(plainlyRpcService
             => plainlyRpcService.NoResultOp(x));
     }
 
-    public async Task<System.Int32> Sum(System.Collections.Generic.IEnumerable<System.Int32> values)
+    public async Task<int> Sum(IEnumerable<int> values)
     {
-        return await ipcHandler.ExecuteRemote<PlainlyIpcTests.Rpc.IRpcTestService, Int32>(plainlyRpcService
+        return await ipcHandler.ExecuteRemote<IRpcTestService, int>(plainlyRpcService
             => plainlyRpcService.Sum(values));
     }
 
     [Obsolete("Remote calls are asynchronous, use the asynchronous version!")]
-    public System.Collections.Generic.IEnumerable<System.Int32> Convert(params Int32[] values)
+    public IEnumerable<int> Convert(params int[] values)
     {
         return Task.Run(() => ConvertAsync(values)).GetAwaiter().GetResult();
     }
 
-    public async Task<System.Collections.Generic.IEnumerable<System.Int32>> ConvertAsync(params Int32[] values)
+    public async Task<IEnumerable<int>> ConvertAsync(params int[] values)
     {
-        return await ipcHandler.ExecuteRemote<PlainlyIpcTests.Rpc.IRpcTestService, System.Collections.Generic.IEnumerable<System.Int32>>(plainlyRpcService
+        return await ipcHandler.ExecuteRemote<IRpcTestService, IEnumerable<int>>(plainlyRpcService
             => plainlyRpcService.Convert(values));
     }
 
@@ -59,25 +59,25 @@ public class RpcTestServiceRemoteProxy : PlainlyIpcTests.Rpc.IRpcTestService
 
     public async Task<T> GenericAsync<T>(T value)
     {
-        return await ipcHandler.ExecuteRemote<PlainlyIpcTests.Rpc.IRpcTestService, T>(plainlyRpcService
+        return await ipcHandler.ExecuteRemote<IRpcTestService, T>(plainlyRpcService
             => plainlyRpcService.Generic(value));
     }
 
     public async Task GetTask()
     {
-        await ipcHandler.ExecuteRemote<PlainlyIpcTests.Rpc.IRpcTestService, Task>(plainlyRpcService
+        await ipcHandler.ExecuteRemote<IRpcTestService, Task>(plainlyRpcService
             => plainlyRpcService.GetTask());
     }
 
     [Obsolete("Remote calls are asynchronous, use the asynchronous version!")]
-    public Int32 ThrowError(String test)
+    public int ThrowError(string test)
     {
         return Task.Run(() => ThrowErrorAsync(test)).GetAwaiter().GetResult();
     }
 
-    public async Task<Int32> ThrowErrorAsync(String test)
+    public async Task<int> ThrowErrorAsync(string test)
     {
-        return await ipcHandler.ExecuteRemote<PlainlyIpcTests.Rpc.IRpcTestService, Int32>(plainlyRpcService
+        return await ipcHandler.ExecuteRemote<IRpcTestService, int>(plainlyRpcService
             => plainlyRpcService.ThrowError(test));
     }
 

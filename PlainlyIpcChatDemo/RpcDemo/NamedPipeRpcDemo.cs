@@ -1,4 +1,4 @@
-﻿using PlainlyIpcChatDemo.RpcDemo.PlainlyIpcProxies;
+﻿using PlainlyIpcChatDemo.RpcDemo.Services;
 using System.Diagnostics;
 
 namespace PlainlyIpcChatDemo.RpcDemo;
@@ -10,14 +10,14 @@ internal class NamedPipeRpcDemo
     /// </summary>
     public static async Task Run(IpcFactory ipcFactory)
     {
-        Console.WriteLine($"Starting NampedPipeIpcChat");
+        Console.WriteLine($"Starting NampedPipeRpcChat");
 
         IIpcHandler ipcHandler;
         Console.WriteLine($"Start a new server (y/n)?");
         var newServer = Console.ReadLine() ?? "";
-        if (newServer.ToLower() == "y")
+        if ("y".Equals(newServer, StringComparison.OrdinalIgnoreCase))
         {
-            var myAddress = $"np-{new Random().Next(10, 99)}";
+            var myAddress = $"np-rpc-chat";
             Console.WriteLine($"Server name/address: {myAddress}");
             ipcHandler = await ipcFactory.CreateNampedPipeIpcServer(myAddress);
             Console.WriteLine("Server is running ...");
@@ -43,7 +43,7 @@ internal class NamedPipeRpcDemo
         {
             var line = Console.ReadLine();
             if (string.IsNullOrEmpty(line)) { continue; }
-            if (line.ToLower() == "exit") { break; }
+            if ("exit".Equals(line, StringComparison.OrdinalIgnoreCase)) { break; }
             await proxy.SendMessageAsync(line);
         }
         ipcHandler.Dispose();

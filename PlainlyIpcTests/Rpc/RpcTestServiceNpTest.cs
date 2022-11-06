@@ -1,6 +1,8 @@
-﻿namespace PlainlyIpcTests.Rpc;
+﻿using PlainlyIpcTests.Rpc.Services;
 
-public class NpRpcTestServiceTest : IAsyncLifetime
+namespace PlainlyIpcTests.Rpc;
+
+public class RpcTestServiceNpTest : IAsyncLifetime
 {
     private readonly string namedPipeName = ConnectionAddressFactory.GetNamedPipeName();
     private IIpcHandler server = null!;

@@ -5,7 +5,7 @@ global using PlainlyIpc.EventArgs;
 global using PlainlyIpc.Exceptions;
 global using PlainlyIpc.Interfaces;
 global using PlainlyIpc.IPC;
-global using PlainlyIpcTests.Shared;
+global using PlainlyIpcTests.Helper;
 global using System;
 global using System.Collections.Generic;
 global using System.Linq;

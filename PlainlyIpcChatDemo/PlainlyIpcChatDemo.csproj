@@ -5,7 +5,7 @@
     <TargetFrameworks>net48;net6.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <LangVersion>10.0</LangVersion>
-    <AnalysisMode>recommend</AnalysisMode>
+    <AnalysisMode>all</AnalysisMode>
   </PropertyGroup>
 
   <ItemGroup>

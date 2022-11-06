@@ -1,6 +1,6 @@
-namespace PlainlyIpcChatDemo.RpcDemo.PlainlyIpcProxies;
+﻿namespace PlainlyIpcChatDemo.RpcDemo.Services;
 
-public class ChatServiceRemoteProxy : PlainlyIpcChatDemo.RpcDemo.IChatService
+public class ChatServiceRemoteProxy : IChatService
 {
     private readonly IIpcHandler ipcHandler;
 
@@ -10,14 +10,14 @@ public class ChatServiceRemoteProxy : PlainlyIpcChatDemo.RpcDemo.IChatService
     }
 
     [Obsolete("Remote calls are asynchronous, use the asynchronous version!")]
-    public void SendMessage(String message)
+    public void SendMessage(string message)
     {
         Task.Run(() => SendMessageAsync(message)).GetAwaiter().GetResult();
     }
 
-    public async Task SendMessageAsync(String message)
+    public async Task SendMessageAsync(string message)
     {
-        await ipcHandler.ExecuteRemote<PlainlyIpcChatDemo.RpcDemo.IChatService>(plainlyRpcService
+        await ipcHandler.ExecuteRemote<IChatService>(plainlyRpcService
             => plainlyRpcService.SendMessage(message));
     }
 

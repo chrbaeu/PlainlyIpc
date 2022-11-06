@@ -1,5 +1,7 @@
-﻿namespace PlainlyIpcTests.Ipc;
-public class ChatServiceTest
+﻿using PlainlyIpcTests.Rpc.Services;
+
+namespace PlainlyIpcTests.Rpc;
+public class ChatServiceNpTest
 {
     private readonly string namedPipeName = ConnectionAddressFactory.GetNamedPipeName();
     private readonly IpcFactory ipcFactory = new();
@@ -24,26 +26,6 @@ public class ChatServiceTest
 
         var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 5));
         passed.Should().BeTrue();
-    }
-
-    public interface IChatService
-    {
-        public void SendMessage(string message);
-    }
-
-    private class ChatService : IChatService
-    {
-        private readonly Action<string> onMessageAction;
-
-        public ChatService(Action<string> onMessageAction)
-        {
-            this.onMessageAction = onMessageAction;
-        }
-
-        public void SendMessage(string message)
-        {
-            onMessageAction.Invoke(message);
-        }
     }
 
 }

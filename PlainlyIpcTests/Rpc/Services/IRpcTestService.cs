@@ -1,4 +1,4 @@
-﻿namespace PlainlyIpcTests.Rpc;
+﻿namespace PlainlyIpcTests.Rpc.Services;
 
 public interface IRpcTestService
 {

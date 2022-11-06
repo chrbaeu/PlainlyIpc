@@ -1,4 +1,4 @@
-﻿using PlainlyIpcChatDemo.RpcDemo.PlainlyIpcProxies;
+﻿using PlainlyIpcChatDemo.RpcDemo.Services;
 using System.Net;
 
 namespace PlainlyIpcChatDemo.RpcDemo;
@@ -15,11 +15,11 @@ internal class TcpRpcDemo
         IIpcHandler ipcHandler;
         Console.WriteLine($"Start a new server (y/n)?");
         var newServer = Console.ReadLine() ?? "";
-        if (newServer.ToLower() == "y")
+        if ("y".Equals(newServer, StringComparison.OrdinalIgnoreCase))
         {
             IPEndPoint myAddress = new(IPAddress.Any, 60042);
             Console.WriteLine($"Server name/address:");
-            foreach (var item in Dns.GetHostEntry(Dns.GetHostName()).AddressList)
+            foreach (var item in (await Dns.GetHostEntryAsync(Dns.GetHostName())).AddressList)
             {
                 Console.WriteLine($"{item}");
             }
@@ -42,7 +42,7 @@ internal class TcpRpcDemo
         {
             var line = Console.ReadLine();
             if (string.IsNullOrEmpty(line)) { continue; }
-            if (line.ToLower() == "exit") { break; }
+            if ("exit".Equals(line, StringComparison.OrdinalIgnoreCase)) { break; }
             await proxy.SendMessageAsync(line);
         }
         ipcHandler.Dispose();

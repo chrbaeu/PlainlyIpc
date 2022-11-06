@@ -1,10 +1,11 @@
-﻿using PlainlyIpcTests.Rpc.PlainlyIpcProxies;
+﻿using PlainlyIpcTests.Rpc.Services;
+using System.Net;
 
 namespace PlainlyIpcTests.Rpc;
 
-public class NpRpcTestServiceProxyTest : IAsyncLifetime
+public class RpcTestServiceProxyTcpTest : IAsyncLifetime
 {
-    private readonly string namedPipeName = ConnectionAddressFactory.GetNamedPipeName();
+    private readonly IPEndPoint ipEndPoint = ConnectionAddressFactory.GetIpEndPoint();
     private IIpcHandler server = null!;
     private IIpcHandler client = null!;
     private RpcTestServiceRemoteProxy proxy = null!;
@@ -12,9 +13,9 @@ public class NpRpcTestServiceProxyTest : IAsyncLifetime
     public async Task InitializeAsync()
     {
         IpcFactory ipcFactory = new();
-        server = await ipcFactory.CreateNampedPipeIpcServer(namedPipeName);
+        server = await ipcFactory.CreateTcpIpcServer(ipEndPoint);
         server.RegisterService<IRpcTestService>(new RpcTestService());
-        client = await ipcFactory.CreateNampedPipeIpcClient(namedPipeName);
+        client = await ipcFactory.CreateTcpIpcClient(ipEndPoint);
         proxy = new(client);
     }
 
@@ -86,13 +87,14 @@ public class NpRpcTestServiceProxyTest : IAsyncLifetime
     {
         await Assert.ThrowsAsync<RemoteException>(async () =>
         {
+            var result = await proxy.ThrowErrorAsync("");
+        });
+
+        Assert.Throws<RemoteException>(() =>
+        {
 #pragma warning disable CS0618 // Type or member is obsolete
             var result = proxy.ThrowError("");
 #pragma warning restore CS0618 // Type or member is obsolete
-        });
-        await Assert.ThrowsAsync<RemoteException>(async () =>
-        {
-            var result = await proxy.ThrowErrorAsync("");
         });
     }
 

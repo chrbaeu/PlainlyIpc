@@ -1,4 +1,4 @@
-﻿namespace PlainlyIpcChatDemo.RpcDemo;
+﻿namespace PlainlyIpcChatDemo.RpcDemo.Services;
 
 public interface IChatService
 {

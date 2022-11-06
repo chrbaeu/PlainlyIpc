@@ -1,8 +1,9 @@
-﻿using System.Net;
+﻿using PlainlyIpcTests.Rpc.Services;
+using System.Net;
 
 namespace PlainlyIpcTests.Rpc;
 
-public class TcpChatServiceTest : IAsyncLifetime
+public class ChatServiceTcpTest : IAsyncLifetime
 {
     private readonly IPEndPoint ipEndPoint = ConnectionAddressFactory.GetIpEndPoint();
     private readonly TaskCompletionSource<bool> tsc = new();
@@ -40,26 +41,6 @@ public class TcpChatServiceTest : IAsyncLifetime
 
         var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 5));
         passed.Should().BeTrue();
-    }
-
-    public interface IChatService
-    {
-        public void SendMessage(string message);
-    }
-
-    internal class ChatService : IChatService
-    {
-        private readonly Action<string> onMessageAction;
-
-        public ChatService(Action<string> onMessageAction)
-        {
-            this.onMessageAction = onMessageAction;
-        }
-
-        public void SendMessage(string message)
-        {
-            onMessageAction.Invoke(message);
-        }
     }
 
 }

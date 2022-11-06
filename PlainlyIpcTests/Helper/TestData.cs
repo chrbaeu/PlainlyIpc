@@ -1,4 +1,4 @@
-﻿namespace PlainlyIpcTests.Shared;
+﻿namespace PlainlyIpcTests.Helper;
 
 internal class TestData
 {

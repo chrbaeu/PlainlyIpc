@@ -77,7 +77,7 @@ internal sealed class ManagedTcpServer : IDataHandler
 
     private void TcpClient_ErrorOccurred(object? sender, ErrorOccurredEventArgs e)
     {
-        if (sender is ManagedTcpClient client)
+        if (sender is ManagedTcpClient client && e.ErrorCode != ErrorEventCode.EventHandlerError)
         {
             client.DataReceived -= TcpClient_DataReceived;
             client.ErrorOccurred -= TcpClient_ErrorOccurred;
