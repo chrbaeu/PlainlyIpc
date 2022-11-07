@@ -27,6 +27,9 @@ public sealed class IpcHandler : IIpcHandler
     /// <inheritdoc/>
     public event EventHandler<IpcMessageReceivedEventArgs>? MessageReceived;
 
+    /// <inheritdoc/>
+    public bool IsConnected => ipcSender.IsConnected && ipcReceiver.IsConnected;
+
     /// <summary>
     /// Creates a new IPC handler from a data handler.
     /// </summary>

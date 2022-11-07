@@ -3,7 +3,7 @@
 /// <summary>
 /// Interface for receiving of data.
 /// </summary>
-public interface IDataReceiver : IDisposable
+public interface IDataReceiver : IDisposable, IConnectionState
 {
 
     /// <summary>

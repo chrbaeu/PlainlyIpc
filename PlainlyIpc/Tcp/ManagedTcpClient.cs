@@ -15,25 +15,19 @@ internal sealed class ManagedTcpClient : IDataHandler
     private NetworkStream? networkStream;
     private bool isDisposed;
 
-    ///<summary>
-    ///True if this socket is connected to a server, false otherwise.
-    ///</summary>
+    /// <inheritdoc/>
+    public event EventHandler<DataReceivedEventArgs>? DataReceived;
+
+    /// <inheritdoc/>
+    public event EventHandler<ErrorOccurredEventArgs>? ErrorOccurred;
+
+    /// <inheritdoc/>
     public bool IsConnected { get; private set; }
 
     /// <summary>
     /// The network endpoint used by the client.
     /// </summary>
     public IPEndPoint Endpoint { get; }
-
-    /// <summary>
-    /// Event called when data arrives.
-    /// </summary>
-    public event EventHandler<DataReceivedEventArgs>? DataReceived;
-
-    /// <summary>
-    /// Event called when a error occurs.
-    /// </summary>
-    public event EventHandler<ErrorOccurredEventArgs>? ErrorOccurred;
 
     /// <summary>
     /// Create a socket using given IP address/hostname and port.

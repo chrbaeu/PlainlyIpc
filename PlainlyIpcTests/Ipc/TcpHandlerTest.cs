@@ -82,12 +82,20 @@ public class TcpHandlerTest
         };
 
         IIpcHandler handlerC = await ipcFactory.CreateTcpIpcClient(ipEndPoint);
+        await Task.Delay(10);
+        Assert.True(handlerS.IsConnected);
+        Assert.True(handlerC.IsConnected);
         await handlerC.SendStringAsync(TestData.Text);
         handlerC.Dispose();
 
         await Task.Delay(10);
+        Assert.False(handlerS.IsConnected);
+        Assert.False(handlerC.IsConnected);
 
         handlerC = await ipcFactory.CreateTcpIpcClient(ipEndPoint);
+        await Task.Delay(10);
+        Assert.True(handlerS.IsConnected);
+        Assert.True(handlerC.IsConnected);
         await handlerC.SendStringAsync(TestData.Text);
         handlerC.Dispose();
 

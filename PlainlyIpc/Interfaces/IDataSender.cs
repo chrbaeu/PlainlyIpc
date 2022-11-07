@@ -3,7 +3,7 @@
 /// <summary>
 /// Interface for asynchronous sending of data.
 /// </summary>
-public interface IDataSender : IDisposable
+public interface IDataSender : IDisposable, IConnectionState
 {
 
     /// <summary>

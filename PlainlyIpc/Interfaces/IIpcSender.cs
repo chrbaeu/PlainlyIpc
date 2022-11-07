@@ -3,7 +3,7 @@
 /// <summary>
 /// Interface for IPC sender implementations.
 /// </summary>
-public interface IIpcSender : IDisposable
+public interface IIpcSender : IDisposable, IConnectionState
 {
 
     /// <summary>

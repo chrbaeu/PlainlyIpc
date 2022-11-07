@@ -14,6 +14,9 @@ public sealed class IpcSender : IIpcSender
     private readonly IObjectConverter objectConverter;
     private bool isDisposed;
 
+    /// <inheritdoc/>
+    public bool IsConnected => dataSender.IsConnected;
+
     /// <summary>
     /// Creates a new IPC sender with the given data sender and object converter.
     /// </summary>

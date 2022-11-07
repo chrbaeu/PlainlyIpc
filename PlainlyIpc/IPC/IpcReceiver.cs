@@ -16,6 +16,9 @@ public sealed class IpcReceiver : IIpcReceiver, IDisposable
     /// <inheritdoc/>
     public event EventHandler<IpcMessageReceivedEventArgs>? MessageReceived;
 
+    /// <inheritdoc/>
+    public bool IsConnected => dataReceiver.IsConnected;
+
     /// <summary>
     /// Creates a new IPC receiver based on the given data receiver and object converter.
     /// </summary>

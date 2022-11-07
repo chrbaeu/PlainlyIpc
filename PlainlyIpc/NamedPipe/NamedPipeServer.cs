@@ -19,6 +19,9 @@ internal sealed class NamedPipeServer : IDataHandler, IDisposable
     /// <inheritdoc/>
     public event EventHandler<ErrorOccurredEventArgs>? ErrorOccurred;
 
+    /// <inheritdoc/>
+    public bool IsConnected { get; private set; }
+
     /// <summary>
     /// The name of the named pipe.
     /// </summary>
@@ -28,11 +31,6 @@ internal sealed class NamedPipeServer : IDataHandler, IDisposable
     /// Indicates if the named pipe server listens for incoming data. 
     /// </summary>
     public bool IsActive { get; private set; }
-
-    /// <summary>
-    /// Indicates if the named pipe server is connected to a client.
-    /// </summary>
-    public bool IsConnected { get; private set; }
 
     /// <summary>
     /// Creates a named pipe server for the given named pipe name.

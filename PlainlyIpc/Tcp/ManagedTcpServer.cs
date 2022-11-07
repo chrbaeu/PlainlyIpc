@@ -22,6 +22,9 @@ internal sealed class ManagedTcpServer : IDataHandler
     /// </summary>
     public bool IsActive => tcpListener.IsListening;
 
+    /// <inheritdoc/>
+    public bool IsConnected => clients.Count > 0;
+
     /// <summary>
     /// Creates a new ManagedTcpServer for the given IP endpoint.
     /// </summary>
@@ -47,7 +50,7 @@ internal sealed class ManagedTcpServer : IDataHandler
     public async Task SendAsync(byte[] data)
     {
         if (isDisposed) { throw new ObjectDisposedException(nameof(ManagedTcpServer)); }
-        if (!clients.Any()) { throw new InvalidOperationException("There are no clients connected to which data can be sent."); }
+        if (!IsConnected) { throw new InvalidOperationException("There are no clients connected to which data can be sent."); }
         await Task.WhenAll(clients.ToList().Select(x => x.SendAsync(data)).ToArray()).ConfigureAwait(false);
     }
 

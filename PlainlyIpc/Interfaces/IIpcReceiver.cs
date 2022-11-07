@@ -3,7 +3,7 @@
 /// <summary>
 /// Interface for IPC receiver implementations.
 /// </summary>
-public interface IIpcReceiver : IDisposable
+public interface IIpcReceiver : IDisposable, IConnectionState
 {
 
     /// <summary>
