@@ -81,5 +81,11 @@ public class RpcTestServiceRemoteProxy : IRpcTestService
             => plainlyRpcService.ThrowError(test));
     }
 
+    public async Task<ITestDataModel> Roundtrip(ITestDataModel dataModel)
+    {
+        return await ipcHandler.ExecuteRemote<IRpcTestService, ITestDataModel>(plainlyRpcService
+            => plainlyRpcService.Roundtrip(dataModel));
+    }
+
 }
 

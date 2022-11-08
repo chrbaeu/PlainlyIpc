@@ -9,4 +9,5 @@ public interface IRpcTestService
     public T Generic<T>(T value);
     public Task GetTask();
     public int ThrowError(string test);
+    public Task<ITestDataModel> Roundtrip(ITestDataModel dataModel);
 }

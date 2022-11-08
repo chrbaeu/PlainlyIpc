@@ -12,7 +12,9 @@ public class RpcTestServiceProxyTcpTest : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        IpcFactory ipcFactory = new();
+        JsonObjectConverter converter = new();
+        converter.AddInterfaceImplentation<ITestDataModel, TestDataModel>();
+        IpcFactory ipcFactory = new(converter);
         server = await ipcFactory.CreateTcpIpcServer(ipEndPoint);
         server.RegisterService<IRpcTestService>(new RpcTestService());
         client = await ipcFactory.CreateTcpIpcClient(ipEndPoint);
@@ -96,6 +98,13 @@ public class RpcTestServiceProxyTcpTest : IAsyncLifetime
             var result = proxy.ThrowError("");
 #pragma warning restore CS0618 // Type or member is obsolete
         });
+    }
+
+    [Fact]
+    public async Task InterfaceTest()
+    {
+        var result = await proxy.Roundtrip(TestData.Model);
+        result.Should().Be(TestData.Model);
     }
 
 }

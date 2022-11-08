@@ -11,4 +11,5 @@ internal class RpcTestService : IRpcTestService
     public T Generic<T>(T value) => value;
     public Task GetTask() => Task.CompletedTask;
     public int ThrowError(string test) => throw new ArgumentException("ERROR", nameof(test));
+    public Task<ITestDataModel> Roundtrip(ITestDataModel dataModel) => Task.FromResult(dataModel);
 }

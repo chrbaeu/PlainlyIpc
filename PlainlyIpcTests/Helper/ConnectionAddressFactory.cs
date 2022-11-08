@@ -10,7 +10,7 @@ internal class ConnectionAddressFactory
     public static IPEndPoint GetIpEndPoint()
     {
         Interlocked.Increment(ref portCounter);
-        return new(IPAddress.Loopback, 60000 + portCounter++);
+        return new(IPAddress.Loopback, 60500 + portCounter++);
     }
 
     public static string GetNamedPipeName()

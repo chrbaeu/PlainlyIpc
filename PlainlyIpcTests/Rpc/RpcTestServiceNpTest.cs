@@ -10,7 +10,9 @@ public class RpcTestServiceNpTest : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        IpcFactory ipcFactory = new();
+        JsonObjectConverter converter = new();
+        converter.AddInterfaceImplentation<ITestDataModel, TestDataModel>();
+        IpcFactory ipcFactory = new(converter);
         server = await ipcFactory.CreateNampedPipeIpcServer(namedPipeName);
         server.RegisterService<IRpcTestService>(new RpcTestService());
         client = await ipcFactory.CreateNampedPipeIpcClient(namedPipeName);
@@ -65,6 +67,14 @@ public class RpcTestServiceNpTest : IAsyncLifetime
         {
             var result = await client.ExecuteRemote<IRpcTestService, int>(x => x.ThrowError(""));
         });
+    }
+
+
+    [Fact]
+    public async Task InterfaceTest()
+    {
+        var result = await client.ExecuteRemote<IRpcTestService, ITestDataModel>(x => x.Roundtrip(TestData.Model));
+        result.Should().Be(TestData.Model);
     }
 
 }

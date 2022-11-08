@@ -2,7 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 
-namespace PlainlyIpcTests.NamedPipe;
+namespace PlainlyIpcTests.Tcp;
 
 public class TcpTest
 {
@@ -33,6 +33,8 @@ public class TcpTest
         {
             Assert.Fail(e.Message);
         };
+
+        await Task.Delay(10);
         await client.ConnectAsync();
 
         var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 5));
