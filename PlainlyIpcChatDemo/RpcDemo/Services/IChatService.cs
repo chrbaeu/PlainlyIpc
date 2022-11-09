@@ -1,6 +1,7 @@
 ﻿namespace PlainlyIpcChatDemo.RpcDemo.Services;
 
+[PlainlyIpc.SourceGenerator.GenerateProxy]
 public interface IChatService
 {
-    public void SendMessage(string message);
+    public Task SendMessage(string message);
 }

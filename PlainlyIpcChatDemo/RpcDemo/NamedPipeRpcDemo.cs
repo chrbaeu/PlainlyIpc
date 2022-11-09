@@ -44,7 +44,7 @@ internal class NamedPipeRpcDemo
             var line = Console.ReadLine();
             if (string.IsNullOrEmpty(line)) { continue; }
             if ("exit".Equals(line, StringComparison.OrdinalIgnoreCase)) { break; }
-            await proxy.SendMessageAsync(line);
+            await proxy.SendMessage(line);
         }
         ipcHandler.Dispose();
     }

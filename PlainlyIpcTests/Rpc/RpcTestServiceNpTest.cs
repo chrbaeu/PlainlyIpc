@@ -48,6 +48,10 @@ public class RpcTestServiceNpTest : IAsyncLifetime
 
         var genericModelResult = await client.ExecuteRemote<IRpcTestService, TestDataModel>(x => x.Generic(TestData.Model));
         genericModelResult.Should().Be(TestData.Model);
+
+        var guid = Guid.NewGuid();
+        var genericGuidResult = await client.ExecuteRemote<IRpcTestService, Guid>(x => x.Generic(guid));
+        genericGuidResult.Should().Be(guid);
     }
 
 

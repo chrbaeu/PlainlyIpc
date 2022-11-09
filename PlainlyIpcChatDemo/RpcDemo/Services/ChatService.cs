@@ -9,8 +9,9 @@ internal class ChatService : IChatService
         this.onMessageAction = onMessageAction;
     }
 
-    public void SendMessage(string message)
+    public Task SendMessage(string message)
     {
         onMessageAction.Invoke(message);
+        return Task.CompletedTask;
     }
 }

@@ -14,6 +14,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlainlyIpc.SourceGenerator", "PlainlyIpc.SourceGenerator\PlainlyIpc.SourceGenerator.csproj", "{331DCAA7-5308-4AF9-BF96-0323FA8DFB96}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,10 @@ Global
 		{154F32F4-946B-4964-A760-4FDE9563A592}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{154F32F4-946B-4964-A760-4FDE9563A592}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{154F32F4-946B-4964-A760-4FDE9563A592}.Release|Any CPU.Build.0 = Release|Any CPU
+		{331DCAA7-5308-4AF9-BF96-0323FA8DFB96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{331DCAA7-5308-4AF9-BF96-0323FA8DFB96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{331DCAA7-5308-4AF9-BF96-0323FA8DFB96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{331DCAA7-5308-4AF9-BF96-0323FA8DFB96}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
