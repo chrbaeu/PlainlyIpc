@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PlainlyIpc.SourceGenerator\PlainlyIpc.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\PlainlyIpc\PlainlyIpc.csproj" />
   </ItemGroup>
 

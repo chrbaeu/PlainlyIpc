@@ -7,7 +7,7 @@ public class RpcTestServiceProxyNpTest : IAsyncLifetime
     private readonly string namedPipeName = ConnectionAddressFactory.GetNamedPipeName();
     private IIpcHandler server = null!;
     private IIpcHandler client = null!;
-    private RpcTestServiceRemoteProxy proxy = null!;
+    private MyRpcTestServiceRemoteProxy proxy = null!;
 
     public async Task InitializeAsync()
     {

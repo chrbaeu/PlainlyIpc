@@ -1,5 +1,6 @@
 ﻿namespace PlainlyIpcTests.Rpc.Services;
 
+[PlainlyIpc.SourceGenerator.GenerateProxy]
 public interface IRpcTestService
 {
     public int Add(int a, int b);

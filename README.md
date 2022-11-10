@@ -72,10 +72,25 @@ Console.ReadKey();
 ```
 Additional usage examples can be found in the sample project "PlainlyIpcChatDemo" and the tests in the "PlainlyIpcTests" project.
 
-For the easier use of the ExecuteRemote functionality of the `IIpcHandler` you can create proxy classes for RPC interfaces with the `RemoteProxyCreator`:
+For the easier use of the ExecuteRemote functionality of the `IIpcHandler` you can create proxy classes for RPC interfaces autmatically.
+
+With the `RemoteProxyCreator`:
 ```csharp
 RemoteProxyCreator.CreateProxyClass<TInterface>(string outputFolderPath, string baseNamespace);
 ```
+Or via the "PlainlyIpc.SourceGenerator" package. This provides a `[GenerateProxy]` attribute that can be annotated to remote interfaces or partial classes that implement a remote interface. The source generator then generates the proxy implementations of the functions defined in the remote interface automatically.
+```csharp
+[GenerateProxy] // Generates 'MyRemoteFunctionsInterfaceRemoteProxy' class in 'MyRemoteFunctionsInterfaceRemoteProxy.g.cs'
+public interface IMyRemoteFunctionsInterface {
+	Task MyFunction();
+}
+// Or
+[GenerateProxy] // Generates partial 'MyRemoteFuctionClass' class in 'MyRemoteFuctionClass.g.cs'
+public partial class MyRemoteFuctionClass : IMyRemoteFunctionsInterface {
+}
+```
+
+> Warning: The source generator is still a prototype and has only a very rudimentary implementation.
 
 The basis for serialization and deserialization is the `IObjectConverter` interface. The defualt implentation ist the `System.Text.Json` based implementations for this interface.
 ```csharp

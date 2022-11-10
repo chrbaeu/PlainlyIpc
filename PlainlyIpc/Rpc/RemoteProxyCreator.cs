@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using PlainlyIpc.SourceGenerator;
+using System.IO;
 
 namespace PlainlyIpc.Rpc;
 
@@ -25,10 +26,10 @@ public static class RemoteProxyCreator
     /// </summary>
     /// <typeparam name="TInterface">The RPC interface.</typeparam>
     /// <param name="outputFolderPath">The output folder Path.</param>
-    /// <param name="baseNamespace">"The base namespace."</param>
-    public static void CreateProxyClass<TInterface>(string outputFolderPath, string baseNamespace)
+    /// <param name="fullNamespace">"The namespace."</param>
+    public static void CreateProxyClass<TInterface>(string outputFolderPath, string fullNamespace)
     {
-        var src = CreateProxyClass<TInterface>(baseNamespace);
+        var src = CreateProxyClass<TInterface>(fullNamespace);
         File.WriteAllText(Path.Combine(Path.GetFullPath(outputFolderPath), GetProxyClassName<TInterface>() + ".cs"), src);
     }
 
@@ -36,117 +37,26 @@ public static class RemoteProxyCreator
     /// Creates the source code for a proxy classes for the RPC interfaces. 
     /// </summary>
     /// <typeparam name="TInterface">The RPC interface.</typeparam>
-    /// <param name="baseNamespace">"The base namespace."</param>
+    /// <param name="fullNamespace">"The namespace."</param>
+    /// <param name="asPartialClass">"Flag that indicates if a partial class should be created."</param>
     /// <returns>The source code for the proxy class.</returns>
-    public static string CreateProxyClass<TInterface>(string baseNamespace)
+    public static string CreateProxyClass<TInterface>(string fullNamespace, bool asPartialClass = false)
     {
-        var type = typeof(TInterface);
+        var interfaceType = typeof(TInterface);
         var className = GetProxyClassName<TInterface>();
-        StringBuilder sb = new();
-        sb.AppendLine($$"""
-            using System;
-            using System.Threading.Tasks;
-
-            namespace {{baseNamespace}}.PlainlyIpcProxies;
-
-            """);
-        sb.AppendLine($$"""
-            public class {{className}} : {{type.FullName}}
-            {
-                private readonly IIpcHandler ipcHandler;
-
-                public {{className}}(IIpcHandler ipcHandler)
-                {
-                    this.ipcHandler = ipcHandler;
-                }
-
-            """);
-        foreach (var method in type.GetMethods())
+        RemoteProxyClassBuilder builder = new(fullNamespace, className, GetTypeDefinition(interfaceType), asPartialClass);
+        foreach (var method in interfaceType.GetMethods())
         {
             string methodName = method.Name;
-            string asyncMethodName = methodName;
-            string genericArgumentsStatement = "";
-            Type[] genericArguments = method.GetGenericArguments();
-            if (genericArguments.Any())
-            {
-                genericArgumentsStatement = $"<{string.Join(", ", genericArguments.Select(x => TrimNamespace(GetTypeDefinition(x))))}>";
-            }
-            var parameterInfos = method.GetParameters();
-            string paramDefs = string.Join(", ", parameterInfos.Select(x =>
-                $"{(x.IsDefined(typeof(ParamArrayAttribute), false) ? "params " : "")}{TrimNamespace(GetTypeDefinition(x.ParameterType))} {x.Name}"));
-            string paramVals = string.Join(", ", parameterInfos.Select(x => x.Name));
+            var generics = method.GetGenericArguments().Select(GetTypeDefinition).ToArray();
+            var parameters = method.GetParameters()
+                .Select(x => (GetTypeDefinition(x.ParameterType), x.Name ?? "", x.IsDefined(typeof(ParamArrayAttribute), false)))
+                .ToArray();
             var returnType = GetTypeDefinition(method.ReturnType);
-            var remoteReturnType = returnType.StartsWith("System.Threading.Tasks.Task<", StringComparison.OrdinalIgnoreCase)
-                ? TrimNamespace(returnType.Substring(28, returnType.Length - 29))
-                : TrimNamespace(returnType);
-            var remoteGenerics = $"{TrimNamespace(GetTypeDefinition(type))}, {remoteReturnType}";
-            string returnStatement = "return ";
-#if NETSTANDARD2_0
-            returnType = returnType.Replace("System.Threading.Tasks.ValueTask", "System.Threading.Tasks.Task");
-#else
-            returnType = returnType.Replace("System.Threading.Tasks.ValueTask", "System.Threading.Tasks.Task", StringComparison.Ordinal);
-#endif
-            if (returnType == "System.Void")
-            {
-                returnStatement = "";
-                returnType = "Task";
-                remoteGenerics = $"{TrimNamespace(GetTypeDefinition(type))}";
-                asyncMethodName += "Async";
-                sb.AppendLine($$"""
-                [Obsolete("Remote calls are asynchronous, use the asynchronous version!")]
-                public void {{methodName}}{{genericArgumentsStatement}}({{paramDefs}})
-                {
-                    Task.Run(() => {{asyncMethodName}}({{paramVals}})).GetAwaiter().GetResult();
-                }
-
-            """);
-            }
-            else if (returnType != "System.Threading.Tasks.Task"
-                && !returnType.StartsWith("System.Threading.Tasks.Task<", StringComparison.Ordinal))
-            {
-                returnType = $"Task<{TrimNamespace(returnType)}>";
-                asyncMethodName += "Async";
-                sb.AppendLine($$"""
-                [Obsolete("Remote calls are asynchronous, use the asynchronous version!")]
-                public {{remoteReturnType}} {{methodName}}{{genericArgumentsStatement}}({{paramDefs}})
-                {
-                    return Task.Run(() => {{asyncMethodName}}({{paramVals}})).GetAwaiter().GetResult();
-                }
-
-            """);
-            }
-            else if (returnType == "System.Threading.Tasks.Task")
-            {
-                returnStatement = "";
-            }
-            sb.AppendLine($$"""
-                public async {{TrimNamespace(returnType)}} {{asyncMethodName}}{{genericArgumentsStatement}}({{paramDefs}})
-                {
-                    {{returnStatement}}await ipcHandler.ExecuteRemote<{{remoteGenerics}}>(plainlyRpcService
-                        => plainlyRpcService.{{methodName}}({{paramVals}}));
-                }
-
-            """);
+            if (returnType == "System.Void") { returnType = "void"; }
+            builder.AddRemoteCall(methodName, returnType, generics, parameters);
         }
-        sb.AppendLine($$"""
-            }
-
-            """);
-        return sb.ToString();
-    }
-
-
-    private static string TrimNamespace(string typeDefinition)
-    {
-        if (typeDefinition.StartsWith("System.Threading.Tasks.", StringComparison.Ordinal))
-        {
-            return typeDefinition.Substring("System.Threading.Tasks.".Length);
-        }
-        if (typeDefinition.StartsWith("System.", StringComparison.Ordinal) && typeDefinition.Count(x => x == '.') == 1)
-        {
-            return typeDefinition.Substring("System.".Length);
-        }
-        return typeDefinition;
+        return builder.ToString();
     }
 
     private static string GetTypeDefinition(Type type)
