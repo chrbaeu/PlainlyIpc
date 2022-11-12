@@ -7,67 +7,58 @@ namespace PlainlyIpc.SourceGenerator;
 [Generator]
 public class ProxyClassCreator : ISourceGenerator
 {
-    internal class SyntaxReceiver : ISyntaxReceiver
-    {
-        public List<TypeDeclarationSyntax> RequestingClasses { get; } = new();
-
-        public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
-        {
-            switch (syntaxNode)
-            {
-                case ClassDeclarationSyntax classDeclarationSyntax:
-                    if (classDeclarationSyntax.AttributeLists.Any())
-                    {
-                        RequestingClasses.Add(classDeclarationSyntax);
-                    }
-                    break;
-                case InterfaceDeclarationSyntax interfaceDeclarationSyntax:
-                    if (interfaceDeclarationSyntax.AttributeLists.Any())
-                    {
-                        RequestingClasses.Add(interfaceDeclarationSyntax);
-                    }
-                    break;
-            }
-            //var requiresGeneration = interfaceDeclarationSyntax.AttributeLists
-            //    .SelectMany(x => x.Attributes)
-            //    .Select(x => x.Name)
-            //    .OfType<IdentifierNameSyntax>()
-            //    .Any(x => x.Identifier.ValueText == "GenerateProxyAttribute" || x.Identifier.ValueText == "GenerateProxy");
-        }
-    }
+    private static SymbolDisplayFormat fullyQualifiedFormat = new(
+        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
+        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+        genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
+        miscellaneousOptions: SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers | SymbolDisplayMiscellaneousOptions.UseSpecialTypes
+        );
 
     public void Initialize(GeneratorInitializationContext context)
     {
+        var source = """
+                using System;
+
+                namespace PlainlyIpc.SourceGenerator
+                {
+                    /// <summary>
+                    /// Attribute for automatic generation of proxy classes.
+                    /// </summary>
+                    [AttributeUsage(AttributeTargets.Interface|AttributeTargets.Class)]
+                    public sealed class GenerateProxyAttribute : Attribute
+                    {
+                    }
+                }
+                """;
+        context.RegisterForPostInitialization((i) => i.AddSource("GenerateProxyAttribute.g.cs", source));
         context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
     }
 
     public void Execute(GeneratorExecutionContext context)
     {
-        if (context.SyntaxReceiver is not SyntaxReceiver receiver
-            || !receiver.RequestingClasses.Any()) { return; }
+        if (context.SyntaxReceiver is not SyntaxReceiver receiver || receiver.TypesToInspect.Count == 0) { return; }
 
-        foreach (TypeDeclarationSyntax declarationSyntax in receiver.RequestingClasses)
+        foreach (TypeDeclarationSyntax declarationSyntax in receiver.TypesToInspect)
         {
-            var list = declarationSyntax.AttributeLists.SelectMany(x => x.Attributes).Select(x => x.Name).ToList();
             SemanticModel semanticModel = context.Compilation.GetSemanticModel(declarationSyntax.SyntaxTree);
-            INamedTypeSymbol? namedTypeSymbol = semanticModel.GetDeclaredSymbol(declarationSyntax);
+            INamedTypeSymbol? namedTypeSymbol = semanticModel.GetDeclaredSymbol(declarationSyntax, context.CancellationToken);
 
             if (namedTypeSymbol is null) { continue; }
             if (!namedTypeSymbol.GetAttributes().Select(x => x.AttributeClass?.Name).Any(x => x == "GenerateProxyAttribute" || x == "GenerateProxy")) { continue; }
             if (namedTypeSymbol.IsStatic) { continue; }
 
-            var (className, sourceCode) = GenerateSource(namedTypeSymbol, declarationSyntax is not InterfaceDeclarationSyntax);
+            var (className, sourceCode) = GenerateSourceCode(namedTypeSymbol, declarationSyntax is not InterfaceDeclarationSyntax);
 
             context.AddSource($"{className}.g.cs", sourceCode);
         }
     }
 
-    private static (string ClassName, string SourceCode) GenerateSource(INamedTypeSymbol namedTypeSymbol, bool partialClassModel)
+    private static (string ClassName, string SourceCode) GenerateSourceCode(INamedTypeSymbol namedTypeSymbol, bool partialClassModel)
     {
-        string fullName = GetFullName(namedTypeSymbol, "");
+        string fullName = GetFullTypeString(namedTypeSymbol);
         var fullNamespace = fullName.Substring(0, fullName.LastIndexOf('.'));
         INamedTypeSymbol interfaceTypeSymbol = partialClassModel ? namedTypeSymbol.Interfaces.First() : namedTypeSymbol;
-        var interfaceTypeName = GetFullName(interfaceTypeSymbol, "");
+        var interfaceTypeName = GetFullTypeString(interfaceTypeSymbol);
         string className;
         if (partialClassModel)
         {
@@ -83,67 +74,34 @@ public class ProxyClassCreator : ISourceGenerator
         foreach (var method in methods)
         {
             if (method.IsStatic) { continue; }
-            var returnType = GetFullName(method.ReturnType, interfaceTypeName);
-            var generics = method.TypeArguments.Select(x => GetFullName(x, interfaceTypeName)).ToArray();
-            var parameters = method.Parameters.Select(x => (Type: GetFullName(x.Type, interfaceTypeName), x.Name, x.IsParams)).ToArray();
+            var returnType = GetFullTypeString(method.ReturnType);
+            var generics = method.TypeArguments.Select(GetFullTypeString).ToArray();
+            var parameters = method.Parameters.Select(x => (Type: GetFullTypeString(x.Type), x.Name, x.IsParams)).ToArray();
             builder.AddRemoteCall(method.Name, returnType, generics, parameters);
         }
         return (className, builder.ToString());
     }
 
-    private static string GetGenerics(IEnumerable<ITypeSymbol> typeParameters, string baseNameSpace)
-    {
-        if (typeParameters.Any())
-        {
-            string prms = string.Join(", ", typeParameters.Select(x => GetFullName(x, baseNameSpace)));
-            return $"<{prms}>";
-        }
-        return "";
-    }
+    private static string GetFullTypeString(ISymbol symbol) => symbol.ToDisplayString(fullyQualifiedFormat);
 
-    private static string GetFullName(ISymbol symbol, string baseNameSpace)
+    internal class SyntaxReceiver : ISyntaxReceiver
     {
-        if (symbol is IArrayTypeSymbol arrayTypeSymbol)
+        public List<TypeDeclarationSyntax> TypesToInspect { get; } = new();
+
+        public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
         {
-            return GetFullName(arrayTypeSymbol.ElementType, baseNameSpace) + "[]";
-        }
-        var nss = new List<string>();
-        INamespaceSymbol ns;
-        if (symbol.ContainingType != null)
-        {
-            nss.Add(symbol.ContainingType.Name);
-            ns = symbol.ContainingType.ContainingNamespace;
-        }
-        else
-        {
-            ns = symbol.ContainingNamespace;
-        }
-        while (ns != null)
-        {
-            if (string.IsNullOrWhiteSpace(ns.Name))
+            if (syntaxNode is not TypeDeclarationSyntax typeDeclarationSyntax) { return; }
+            if (typeDeclarationSyntax.AttributeLists.Count == 0) { return; }
+            switch (syntaxNode)
             {
-                break;
+                case ClassDeclarationSyntax classDeclarationSyntax:
+                    TypesToInspect.Add(classDeclarationSyntax);
+                    break;
+                case InterfaceDeclarationSyntax interfaceDeclarationSyntax:
+                    TypesToInspect.Add(interfaceDeclarationSyntax);
+                    break;
             }
-            nss.Add(ns.Name);
-            ns = ns.ContainingNamespace;
         }
-        nss.Reverse();
-        var generics = "";
-        if (symbol is INamedTypeSymbol typeParameterSymbol)
-        {
-            generics = GetGenerics(typeParameterSymbol.TypeArguments, baseNameSpace);
-        }
-        if (nss.Any())
-        {
-            var nsText = string.Join(".", nss);
-            if (nsText == baseNameSpace)
-            {
-                return symbol.Name + generics;
-            }
-            return $"{nsText}.{symbol.Name}{generics}";
-        }
-        return symbol.Name + generics;
     }
 
 }
-
