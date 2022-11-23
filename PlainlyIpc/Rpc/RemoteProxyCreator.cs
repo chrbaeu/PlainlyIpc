@@ -44,7 +44,7 @@ public static class RemoteProxyCreator
     {
         var interfaceType = typeof(TInterface);
         var className = GetProxyClassName<TInterface>();
-        RemoteProxyClassBuilder builder = new(fullNamespace, className, GetTypeDefinition(interfaceType), asPartialClass);
+        RemoteProxyClassBuilder builder = new(fullNamespace, className, GetTypeDefinition(interfaceType), asPartialClass, "public");
         foreach (var method in interfaceType.GetMethods())
         {
             string methodName = method.Name;

@@ -23,6 +23,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\PlainlyIpc\SourceGenerator\RemoteProxyClassBuilder.cs" Link="RemoteProxyClassBuilder.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="icon.png">
       <PackagePath>\</PackagePath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

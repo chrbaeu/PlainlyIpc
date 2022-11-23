@@ -69,7 +69,18 @@ public class ProxyClassCreator : ISourceGenerator
             className = $"{interfaceTypeSymbol.Name}RemoteProxy";
             if (className.StartsWith("I", StringComparison.Ordinal)) { className = className.Substring(1); }
         }
-        RemoteProxyClassBuilder builder = new(fullNamespace, className, interfaceTypeName, partialClassModel);
+        string accessibility = namedTypeSymbol.DeclaredAccessibility switch
+        {
+            Accessibility.NotApplicable => "private",
+            Accessibility.Private => "private",
+            Accessibility.ProtectedAndInternal => "protected",
+            Accessibility.Protected => "protected",
+            Accessibility.Internal => "internal",
+            Accessibility.ProtectedOrInternal => "protected",
+            Accessibility.Public => "public",
+            _ => "private"
+        };
+        RemoteProxyClassBuilder builder = new(fullNamespace, className, interfaceTypeName, partialClassModel, accessibility);
         var methods = interfaceTypeSymbol.GetMembers().OfType<IMethodSymbol>();
         foreach (var method in methods)
         {

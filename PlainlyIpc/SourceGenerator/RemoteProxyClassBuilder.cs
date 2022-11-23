@@ -6,10 +6,11 @@ internal class RemoteProxyClassBuilder
     private readonly string className;
     private readonly string interfaceType;
     private readonly bool isPartial;
+    private readonly string accessibility;
     private readonly List<string> usings = new();
     private readonly List<string> methods = new();
 
-    public RemoteProxyClassBuilder(string fullNamespace, string className, string interfaceType, bool isPartial)
+    public RemoteProxyClassBuilder(string fullNamespace, string className, string interfaceType, bool isPartial, string accessibility)
     {
         this.fullNamespace = fullNamespace;
         this.className = className;
@@ -17,6 +18,7 @@ internal class RemoteProxyClassBuilder
         var interfaceNamespace = interfaceType.Substring(0, lastDotIndex);
         this.interfaceType = interfaceType.Substring(lastDotIndex + 1);
         this.isPartial = isPartial;
+        this.accessibility = accessibility;
         usings.Add("System");
         usings.Add("System.Threading.Tasks");
         usings.Add("PlainlyIpc.Interfaces");
@@ -26,6 +28,7 @@ internal class RemoteProxyClassBuilder
     public void AddRemoteCall(string methodName, string returnType, IList<string> generics, IList<(string Type, string Name, bool IsParams)> parameters)
     {
         const string fullTaskName = "System.Threading.Tasks.Task";
+        if (returnType == "System.Void") { returnType = "void"; }
         string unpackedReturnType = returnType;
         bool isAsync = false;
 #if NETSTANDARD2_0
@@ -62,7 +65,7 @@ internal class RemoteProxyClassBuilder
                     public async {{returnType}} {{methodName}}{{genericsStatement}}({{paramDefs}})
                     {
                         {{(hasReturnValue ? "return " : "")}}await ipcHandler.ExecuteRemote<{{interfaceType}}{{(hasReturnValue ? $", {unpackedReturnType}" : "")}}>(
-                            plainlyRpcService => plainlyRpcService.{{methodName}}{{genericsStatement}}({{paramVals}}));
+                            plainlyRpcService => plainlyRpcService.{{methodName}}{{genericsStatement}}({{paramVals}})).ConfigureAwait(false);
                     }
             """);
         }
@@ -79,7 +82,7 @@ internal class RemoteProxyClassBuilder
                     public async {{returnType}} {{methodName}}Async{{genericsStatement}}({{paramDefs}})
                     {
                         {{(hasReturnValue ? "return " : "")}}await ipcHandler.ExecuteRemote<{{interfaceType}}{{(hasReturnValue ? $", {unpackedReturnType}" : "")}}>(
-                            plainlyRpcService => plainlyRpcService.{{methodName}}{{genericsStatement}}({{paramVals}}));
+                            plainlyRpcService => plainlyRpcService.{{methodName}}{{genericsStatement}}({{paramVals}})).ConfigureAwait(false);
                     }
             """);
         }
@@ -92,7 +95,7 @@ internal class RemoteProxyClassBuilder
 
             namespace {{fullNamespace}} {
 
-                public {{(isPartial ? "partial" : "sealed")}} class {{className}}{{(interfaceType is null ? "" : $" : {interfaceType}")}}
+                {{accessibility}} {{(isPartial ? "partial" : "sealed")}} class {{className}}{{(interfaceType is null ? "" : $" : {interfaceType}")}}
                 {
 
                     private readonly IIpcHandler ipcHandler;
