@@ -5,8 +5,7 @@ namespace PlainlyIpc.Internal;
 
 internal static class TypeExtensions
 {
-    // https://regex101.com/r/7OhC2d/2
-    private static readonly Regex typeStringRegex = new(@"^([^ ]*) ([^ \[]*)(\[(.*)\]){0,1}$", RegexOptions.Compiled);
+    private static readonly Regex typeStringRegex = new("^([^ ]*) (([^ \\[]*)(\\[\\])*)(\\[(.*)\\]){0,1}$", RegexOptions.Compiled);
 
     public static string GetTypeString(this Type type)
     {
@@ -28,19 +27,19 @@ internal static class TypeExtensions
         if (type is null)
         {
             var assemplyFilterString = match.Groups[1].Value + ",";
-            Func<Assembly, bool> predicate = x => x.FullName?.StartsWith(assemplyFilterString, StringComparison.Ordinal) ?? false;
-            var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(predicate);
+            bool predicate(Assembly x) => x.FullName?.StartsWith(assemplyFilterString, StringComparison.Ordinal) ?? false;
+            var assembly = Array.Find(AppDomain.CurrentDomain.GetAssemblies(), predicate);
             if (assembly is null)
             {
                 var assemblies = GetAssemblies();
-                var refAssembly = assemblies.FirstOrDefault(predicate);
+                var refAssembly = assemblies.Find(predicate);
                 assembly = AppDomain.CurrentDomain.Load(refAssembly?.FullName ?? match.Groups[1].Value);
             }
             type = assembly?.GetType(match.Groups[2].Value);
         }
-        if (type is not null && !string.IsNullOrEmpty(match.Groups[4].Value))
+        if (type is not null && !string.IsNullOrEmpty(match.Groups[6].Value))
         {
-            var genericArguments = SplitGenericTypeArguments(match.Groups[4].Value);
+            var genericArguments = SplitGenericTypeArguments(match.Groups[6].Value);
             type = type.MakeGenericType(genericArguments.Select(GetTypeFromTypeString).ToArray());
         }
         return type ?? throw new ArgumentException("Invalid type info!", nameof(typeInfo));
@@ -73,9 +72,9 @@ internal static class TypeExtensions
     {
         List<string> typeArguments = new();
         int markers = 0, lastIndex = 0;
-        for (int i = 0; i < genericArguments.Length; i++)
+        for (var i = 0; i < genericArguments.Length; i++)
         {
-            char c = genericArguments[i];
+            var c = genericArguments[i];
             if (c == '[') { markers++; }
             if (c == ']') { markers--; }
             if (c == ',' && markers == 0)
@@ -87,5 +86,4 @@ internal static class TypeExtensions
         typeArguments.Add(genericArguments.Substring(lastIndex + 1, genericArguments.Length - lastIndex - 2));
         return typeArguments;
     }
-
 }

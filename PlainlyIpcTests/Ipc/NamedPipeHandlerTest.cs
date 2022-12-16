@@ -125,6 +125,30 @@ public class NamedPipeIpcHandlerTest
     }
 
     [Fact]
+    public async Task ObjectDataArrayTest()
+    {
+        using IIpcHandler handlerS = await ipcFactory.CreateNampedPipeIpcServer(namedPipeName);
+        using IIpcHandler handlerC = await ipcFactory.CreateNampedPipeIpcClient(namedPipeName);
+
+        var data = new string[] { "1", "2", "3" };
+
+        handlerS.ErrorOccurred += (sender, e) =>
+        {
+            tsc.TrySetResult(false);
+        };
+        handlerS.MessageReceived += (sender, e) =>
+        {
+            e.Value.Should().BeEquivalentTo(data);
+            tsc.SetResult(true);
+        };
+
+        await handlerC.SendObjectAsync(data);
+
+        var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 5));
+        passed.Should().BeTrue();
+    }
+
+    [Fact]
     public async Task NoClientTest()
     {
         using IIpcHandler server = await ipcFactory.CreateNampedPipeIpcServer(namedPipeName);
