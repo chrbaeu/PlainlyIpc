@@ -17,6 +17,17 @@ public class JsonConverterTests
     }
 
     [Fact]
+    public void InterfacesTest()
+    {
+        converter.AddInterfaceImplentation<ITestDataModel, TestDataModel>();
+        byte[] serialized = converter.Serialize(TestData.TestDataModels);
+        List<TestDataModel>? deserialized = converter.Deserialize<List<TestDataModel>>(serialized);
+        deserialized.Should().BeEquivalentTo(TestData.TestDataModels);
+        deserialized = converter.Deserialize(serialized, typeof(List<TestDataModel>)) as List<TestDataModel>;
+        deserialized.Should().BeEquivalentTo(TestData.TestDataModels);
+    }
+
+    [Fact]
     public void DictionaryTest()
     {
         byte[] serialized = converter.Serialize(TestData.Dict);
