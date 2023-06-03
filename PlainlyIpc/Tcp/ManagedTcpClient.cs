@@ -89,7 +89,7 @@ internal sealed class ManagedTcpClient : IDataHandler
         this.tcpClient = tcpClient;
         networkStream = tcpClient.GetStream();
         IsConnected = true;
-        _ = AcceptIncommingData();
+        _ = AcceptIncomingData();
     }
 
     /// <summary>
@@ -114,7 +114,7 @@ internal sealed class ManagedTcpClient : IDataHandler
         }
         networkStream = tcpClient.GetStream();
         IsConnected = true;
-        _ = AcceptIncommingData();
+        _ = AcceptIncomingData();
     }
 
     /// <summary>
@@ -154,9 +154,9 @@ internal sealed class ManagedTcpClient : IDataHandler
         GC.SuppressFinalize(this);
     }
 
-    private async Task AcceptIncommingData()
+    private async Task AcceptIncomingData()
     {
-        if (networkStream is null) { throw new InvalidOperationException("AcceptIncommingData requires a open connection."); }
+        if (networkStream is null) { throw new InvalidOperationException("AcceptIncomingData requires a open connection."); }
         try
         {
             byte[] lenArray = new byte[4];

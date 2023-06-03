@@ -12,11 +12,11 @@ public class RpcTestServiceProxyNpTest : IAsyncLifetime
     public async Task InitializeAsync()
     {
         JsonObjectConverter converter = new();
-        converter.AddInterfaceImplentation<ITestDataModel, TestDataModel>();
+        converter.AddInterfaceImplementation<ITestDataModel, TestDataModel>();
         IpcFactory ipcFactory = new(converter);
-        server = await ipcFactory.CreateNampedPipeIpcServer(namedPipeName);
+        server = await ipcFactory.CreateNamedPipeIpcServer(namedPipeName);
         server.RegisterService<IRpcTestService>(new RpcTestService());
-        client = await ipcFactory.CreateNampedPipeIpcClient(namedPipeName);
+        client = await ipcFactory.CreateNamedPipeIpcClient(namedPipeName);
         proxy = new(client);
     }
 

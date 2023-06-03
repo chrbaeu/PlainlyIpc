@@ -13,7 +13,7 @@ public class RpcTestServiceProxyTcpTest : IAsyncLifetime
     public async Task InitializeAsync()
     {
         JsonObjectConverter converter = new();
-        converter.AddInterfaceImplentation<ITestDataModel, TestDataModel>();
+        converter.AddInterfaceImplementation<ITestDataModel, TestDataModel>();
         IpcFactory ipcFactory = new(converter);
         server = await ipcFactory.CreateTcpIpcServer(ipEndPoint);
         server.RegisterService<IRpcTestService>(new RpcTestService());

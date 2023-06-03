@@ -8,7 +8,7 @@ internal sealed class RemoteResult : RemoteMessage
     }
 
     /// <summary>
-    /// The reult of the call.
+    /// The result of the call.
     /// </summary>
     public byte[] ResultData { get; }
 

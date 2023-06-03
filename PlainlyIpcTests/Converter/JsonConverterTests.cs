@@ -19,7 +19,7 @@ public class JsonConverterTests
     [Fact]
     public void InterfacesTest()
     {
-        converter.AddInterfaceImplentation<ITestDataModel, TestDataModel>();
+        converter.AddInterfaceImplementation<ITestDataModel, TestDataModel>();
         byte[] serialized = converter.Serialize(TestData.TestDataModels);
         List<TestDataModel>? deserialized = converter.Deserialize<List<TestDataModel>>(serialized);
         deserialized.Should().BeEquivalentTo(TestData.TestDataModels);

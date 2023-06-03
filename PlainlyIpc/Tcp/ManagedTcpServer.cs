@@ -3,7 +3,7 @@
 namespace PlainlyIpc.Tcp;
 
 /// <summary>
-/// TCP server based on the ManagedTcpLister that implenets the IDataHandler interface.
+/// TCP server based on the ManagedTcpLister that implements the IDataHandler interface.
 /// </summary>
 internal sealed class ManagedTcpServer : IDataHandler
 {
@@ -43,7 +43,7 @@ internal sealed class ManagedTcpServer : IDataHandler
     {
         if (isDisposed) { throw new ObjectDisposedException(nameof(ManagedTcpServer)); }
         if (IsActive) { return Task.CompletedTask; }
-        return tcpListener.StartListenAync();
+        return tcpListener.StartListenAsync();
     }
 
     /// <inheritdoc/>

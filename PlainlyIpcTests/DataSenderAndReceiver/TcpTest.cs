@@ -10,7 +10,7 @@ public class TcpTest
     private TaskCompletionSource<bool> tsc = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     [Fact]
-    public async Task SendAndReciveData()
+    public async Task SendAndReceiveData()
     {
         using ManagedTcpListener server = new(ipEndPoint);
         server.IncomingTcpClient += async (object? sender, IncomingTcpClientEventArgs e) =>
@@ -21,7 +21,7 @@ public class TcpTest
         {
             Assert.Fail(e.Message);
         };
-        var serverTask = Task.Run(() => server.StartListenAync());
+        var serverTask = Task.Run(() => server.StartListenAsync());
 
         using ManagedTcpClient client = new(ipEndPoint);
         client.DataReceived += (object? sender, DataReceivedEventArgs e) =>
@@ -46,11 +46,11 @@ public class TcpTest
     public void ServerPortInUseTest()
     {
         using ManagedTcpListener server1 = new(ipEndPoint);
-        _ = server1.StartListenAync();
+        _ = server1.StartListenAsync();
         Assert.Throws<SocketException>(() =>
         {
             using ManagedTcpListener server2 = new(ipEndPoint);
-            _ = server2.StartListenAync();
+            _ = server2.StartListenAsync();
         });
     }
 
@@ -66,7 +66,7 @@ public class TcpTest
         {
             Assert.Fail(e.Message);
         };
-        var serverTask = Task.Run(() => server.StartListenAync());
+        var serverTask = Task.Run(() => server.StartListenAsync());
 
         ManagedTcpClient client = new(ipEndPoint);
         client.DataReceived += (object? sender, DataReceivedEventArgs e) =>
@@ -115,7 +115,7 @@ public class TcpTest
         {
             Assert.Fail(e.Message);
         };
-        var serverTask = server.StartListenAync();
+        var serverTask = server.StartListenAsync();
 
         using ManagedTcpClient client = new(ipEndPoint);
         client.DataReceived += (object? sender, DataReceivedEventArgs e) =>
@@ -150,7 +150,7 @@ public class TcpTest
     {
         using ManagedTcpListener server = new(ipEndPoint);
 
-        var serverTask = server.StartListenAync();
+        var serverTask = server.StartListenAsync();
         server.Stop();
         await Task.Delay(10);
         Assert.True(serverTask.IsCompleted);
@@ -163,7 +163,7 @@ public class TcpTest
         {
             Assert.Fail(e.Message);
         };
-        _ = server.StartListenAync();
+        _ = server.StartListenAsync();
         Assert.True(server.IsListening);
 
         using ManagedTcpClient client = new(ipEndPoint);

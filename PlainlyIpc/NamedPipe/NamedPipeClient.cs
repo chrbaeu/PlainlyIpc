@@ -60,7 +60,7 @@ internal sealed class NamedPipeClient : IDataHandler, IDisposable
             throw new IOException($"Connecting to named pipe '{NamedPipeName}' failed!");
         }
         IsConnected = true;
-        _ = AcceptIncommingData();
+        _ = AcceptIncomingData();
     }
 
     /// <inheritdoc/>
@@ -94,7 +94,7 @@ internal sealed class NamedPipeClient : IDataHandler, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    private async Task AcceptIncommingData()
+    private async Task AcceptIncomingData()
     {
         try
         {

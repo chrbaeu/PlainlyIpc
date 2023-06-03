@@ -13,8 +13,8 @@ IpcFactory ipcFactory = new IpcFactory(objectConverter);
 Creating `IIpcSender` & `IIpcReceiver` instances based on named pipes or TCP:
 ```csharp
 // Named pipe
-IIpcReceiver receiver = await ipcFactory.CreateNampedPipeIpcReceiver(namedPipeName);
-IIpcSender sender = await ipcFactory.CreateNampedPipeIpcSender(namedPipeName);
+IIpcReceiver receiver = await ipcFactory.CreateNamedPipeIpcReceiver(namedPipeName);
+IIpcSender sender = await ipcFactory.CreateNamedPipeIpcSender(namedPipeName);
 
 // TCP
 IIpcReceiver receiver = await ipcFactory.CreateTcpIpcReceiver(namedPipeName);
@@ -24,8 +24,8 @@ IIpcSender sender = await ipcFactory.CreateTcpIpcSender(namedPipeName);
 Creatting `IpcHandler` instances based on named pipes or TCP:
 ```csharp
 // Named pipe
-IIpcHandler server = await ipcFactory.CreateNampedPipeIpcServer(namedPipeName);
-IIpcHandler client = await ipcFactory.CreateNampedPipeIpcClient(namedPipeName);
+IIpcHandler server = await ipcFactory.CreateNamedPipeIpcServer(namedPipeName);
+IIpcHandler client = await ipcFactory.CreateNamedPipeIpcClient(namedPipeName);
 
 // TCP
 IIpcHandler server = await ipcFactory.CreateTcpIpcServer(namedPipeName);
@@ -59,13 +59,13 @@ Minimal example:
 ```csharp
 IpcFactory ipcFactory = new IpcFactory();
 
-using IIpcHandler server = await ipcFactory.CreateNampedPipeIpcServer("MyNamedPipe");
+using IIpcHandler server = await ipcFactory.CreateNamedPipeIpcServer("MyNamedPipe");
 server.MessageReceived += (sender, e) =>
 {
 	Console.WriteLine(e.Value);
 };
 
-using IIpcHandler client = await ipcFactory.CreateNampedPipeIpcClient("MyNamedPipe");
+using IIpcHandler client = await ipcFactory.CreateNamedPipeIpcClient("MyNamedPipe");
 await client.SendStringAsync("Hello World!");
 
 Console.ReadKey();
@@ -92,7 +92,7 @@ public partial class MyRemoteFuctionClass : IMyRemoteFunctionsInterface {
 
 > Warning: The source generator is still a prototype and has only a very rudimentary implementation.
 
-The basis for serialization and deserialization is the `IObjectConverter` interface. The defualt implentation ist the `System.Text.Json` based implementations for this interface.
+The basis for serialization and deserialization is the `IObjectConverter` interface. The defualt implementation ist the `System.Text.Json` based implementations for this interface.
 ```csharp
 IObjectConverter objectConverter = new JsonObjectConverter();
 ```

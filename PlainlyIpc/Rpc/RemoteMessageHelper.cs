@@ -10,21 +10,21 @@ internal static class RemoteMessageHelper
     /// </summary>
     /// <param name="interfaceType">The interfaces that defines the called method.</param>
     /// <param name="expression">The expression for the call.</param>
-    /// <param name="obectConverter">The converter used to serialize the data.</param>
+    /// <param name="objectConverter">The converter used to serialize the data.</param>
     /// <returns>The remote call.</returns>
-    public static RemoteCall FromCall(Type interfaceType, Expression expression, IObjectConverter obectConverter)
+    public static RemoteCall FromCall(Type interfaceType, Expression expression, IObjectConverter objectConverter)
     {
-        if (expression is not LambdaExpression lamdaExp)
+        if (expression is not LambdaExpression lambdaExp)
         {
-            throw new ArgumentException("Only supports lambda expresions, e.g.: x => x.GetData(a, b)");
+            throw new ArgumentException("Only supports lambda expressions, e.g.: x => x.GetData(a, b)");
         }
-        if (lamdaExp.Body is not MethodCallExpression methodCallExp)
+        if (lambdaExp.Body is not MethodCallExpression methodCallExp)
         {
             throw new ArgumentException("Only supports calling methods, e.g.: x => x.GetData(a, b)");
         }
         string methodName = methodCallExp.Method.Name;
         object?[] argumentList = methodCallExp.Arguments.Select(argumentExpression => Expression.Lambda(argumentExpression).Compile().DynamicInvoke()).ToArray();
-        byte[][] parameters = argumentList.Select(x => obectConverter.Serialize(x)).ToArray();
+        byte[][] parameters = argumentList.Select(x => objectConverter.Serialize(x)).ToArray();
         Type[] genericArguments = methodCallExp.Method.GetGenericArguments();
         return new RemoteCall(Guid.NewGuid(), interfaceType, methodName, parameters, genericArguments);
     }

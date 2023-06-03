@@ -19,7 +19,7 @@ public enum IpcMessageType : byte
     StringData,
 
     /// <summary>
-    /// A serializied object
+    /// A serialized object
     /// </summary>
     ObjectData,
 

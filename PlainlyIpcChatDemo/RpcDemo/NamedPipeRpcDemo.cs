@@ -10,7 +10,7 @@ internal class NamedPipeRpcDemo
     /// </summary>
     public static async Task Run(IpcFactory ipcFactory)
     {
-        Console.WriteLine($"Starting NampedPipeRpcChat");
+        Console.WriteLine($"Starting NamedPipeRpcChat");
 
         IIpcHandler ipcHandler;
         Console.WriteLine($"Start a new server (y/n)?");
@@ -19,7 +19,7 @@ internal class NamedPipeRpcDemo
         {
             var myAddress = $"np-rpc-chat";
             Console.WriteLine($"Server name/address: {myAddress}");
-            ipcHandler = await ipcFactory.CreateNampedPipeIpcServer(myAddress);
+            ipcHandler = await ipcFactory.CreateNamedPipeIpcServer(myAddress);
             Console.WriteLine("Server is running ...");
         }
         else
@@ -27,7 +27,7 @@ internal class NamedPipeRpcDemo
             Console.WriteLine($"Enter server name/address:");
             var destAddress = Console.ReadLine() ?? "";
             Console.WriteLine($"Connecting to {destAddress} ...");
-            ipcHandler = await ipcFactory.CreateNampedPipeIpcClient(destAddress);
+            ipcHandler = await ipcFactory.CreateNamedPipeIpcClient(destAddress);
             Console.WriteLine("Client is connected ...");
         }
         ipcHandler.ErrorOccurred += (s, e) => Console.WriteLine(e.Message);

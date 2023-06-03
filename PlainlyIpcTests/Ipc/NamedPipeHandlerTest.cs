@@ -11,8 +11,8 @@ public class NamedPipeIpcHandlerTest
     [Fact]
     public async Task CtoSTest()
     {
-        using IIpcHandler handlerS = await ipcFactory.CreateNampedPipeIpcServer(namedPipeName);
-        using IIpcHandler handlerC = await ipcFactory.CreateNampedPipeIpcClient(namedPipeName);
+        using IIpcHandler handlerS = await ipcFactory.CreateNamedPipeIpcServer(namedPipeName);
+        using IIpcHandler handlerC = await ipcFactory.CreateNamedPipeIpcClient(namedPipeName);
 
         handlerS.ErrorOccurred += (sender, e) =>
         {
@@ -33,8 +33,8 @@ public class NamedPipeIpcHandlerTest
     [Fact]
     public async Task CtoSAndSToCTest()
     {
-        using IIpcHandler handlerS = await ipcFactory.CreateNampedPipeIpcServer(namedPipeName);
-        using IIpcHandler handlerC = await ipcFactory.CreateNampedPipeIpcClient(namedPipeName);
+        using IIpcHandler handlerS = await ipcFactory.CreateNamedPipeIpcServer(namedPipeName);
+        using IIpcHandler handlerC = await ipcFactory.CreateNamedPipeIpcClient(namedPipeName);
 
         handlerS.ErrorOccurred += (sender, e) =>
         {
@@ -64,7 +64,7 @@ public class NamedPipeIpcHandlerTest
     [Fact]
     public async Task ReconnectTest()
     {
-        using IIpcHandler handlerS = await ipcFactory.CreateNampedPipeIpcServer(namedPipeName);
+        using IIpcHandler handlerS = await ipcFactory.CreateNamedPipeIpcServer(namedPipeName);
         bool state = false;
         handlerS.ErrorOccurred += (sender, e) =>
         {
@@ -80,7 +80,7 @@ public class NamedPipeIpcHandlerTest
             state = true;
         };
 
-        IIpcHandler handlerC = await ipcFactory.CreateNampedPipeIpcClient(namedPipeName);
+        IIpcHandler handlerC = await ipcFactory.CreateNamedPipeIpcClient(namedPipeName);
         Assert.True(handlerS.IsConnected);
         Assert.True(handlerC.IsConnected);
         await handlerC.SendStringAsync(TestData.Text);
@@ -90,7 +90,7 @@ public class NamedPipeIpcHandlerTest
         Assert.False(handlerS.IsConnected);
         Assert.False(handlerC.IsConnected);
 
-        handlerC = await ipcFactory.CreateNampedPipeIpcClient(namedPipeName);
+        handlerC = await ipcFactory.CreateNamedPipeIpcClient(namedPipeName);
         Assert.True(handlerS.IsConnected);
         Assert.True(handlerC.IsConnected);
         await handlerC.SendStringAsync(TestData.Text);
@@ -103,8 +103,8 @@ public class NamedPipeIpcHandlerTest
     [Fact]
     public async Task ObjectDataTest()
     {
-        using IIpcHandler handlerS = await ipcFactory.CreateNampedPipeIpcServer(namedPipeName);
-        using IIpcHandler handlerC = await ipcFactory.CreateNampedPipeIpcClient(namedPipeName);
+        using IIpcHandler handlerS = await ipcFactory.CreateNamedPipeIpcServer(namedPipeName);
+        using IIpcHandler handlerC = await ipcFactory.CreateNamedPipeIpcClient(namedPipeName);
 
         var rect = new Rectangle(10, 20, 300, 400);
 
@@ -127,8 +127,8 @@ public class NamedPipeIpcHandlerTest
     [Fact]
     public async Task ObjectDataArrayTest()
     {
-        using IIpcHandler handlerS = await ipcFactory.CreateNampedPipeIpcServer(namedPipeName);
-        using IIpcHandler handlerC = await ipcFactory.CreateNampedPipeIpcClient(namedPipeName);
+        using IIpcHandler handlerS = await ipcFactory.CreateNamedPipeIpcServer(namedPipeName);
+        using IIpcHandler handlerC = await ipcFactory.CreateNamedPipeIpcClient(namedPipeName);
 
         var data = new string[] { "1", "2", "3" };
 
@@ -151,7 +151,7 @@ public class NamedPipeIpcHandlerTest
     [Fact]
     public async Task NoClientTest()
     {
-        using IIpcHandler server = await ipcFactory.CreateNampedPipeIpcServer(namedPipeName);
+        using IIpcHandler server = await ipcFactory.CreateNamedPipeIpcServer(namedPipeName);
         await Assert.ThrowsAsync<IpcException>(async () =>
         {
             await server.SendStringAsync(TestData.Text);

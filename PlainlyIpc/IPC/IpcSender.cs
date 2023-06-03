@@ -139,7 +139,7 @@ public sealed class IpcSender : IIpcSender
             memoryStream.WriteByte((byte)IpcMessageType.RemoteMessage);
             memoryStream.Write(data);
             await dataSender.SendAsync(memoryStream.ToArray()).ConfigureAwait(false);
-            Debug.WriteLine("#>SendRemoteMessageAsync sended");
+            Debug.WriteLine("#>SendRemoteMessageAsync sent");
         }
         catch (Exception e)
         {

@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace PlainlyIpc.Converter;
 
 /// <summary>
-/// System.Text.Json based IObjectConverter implentation.
+/// System.Text.Json based IObjectConverter implementation.
 /// </summary>
 public sealed class JsonObjectConverter : IObjectConverter
 {
@@ -14,12 +14,24 @@ public sealed class JsonObjectConverter : IObjectConverter
     /// Registers an implementation for an interface to deserialize interface instances.
     /// </summary>
     /// <typeparam name="TInterface">The interface type.</typeparam>
-    /// <typeparam name="TImplemntation">The type implementing the interface.</typeparam>
-    public void AddInterfaceImplentation<TInterface, TImplemntation>()
-        where TImplemntation : TInterface
+    /// <typeparam name="TImplementation">The type implementing the interface.</typeparam>
+    [Obsolete("Use AddInterfaceImplementation instead.")]
+    public void AddInterfaceImplentation<TInterface, TImplementation>()
+        where TImplementation : TInterface
+    {
+        AddInterfaceImplementation<TInterface, TImplementation>();
+    }
+
+    /// <summary>
+    /// Registers an implementation for an interface to deserialize interface instances.
+    /// </summary>
+    /// <typeparam name="TInterface">The interface type.</typeparam>
+    /// <typeparam name="TImplementation">The type implementing the interface.</typeparam>
+    public void AddInterfaceImplementation<TInterface, TImplementation>()
+        where TImplementation : TInterface
     {
         jsonSerializerOptions ??= new JsonSerializerOptions();
-        jsonSerializerOptions.Converters.Add(new TypeMappingConverter<TInterface, TImplemntation>());
+        jsonSerializerOptions.Converters.Add(new TypeMappingConverter<TInterface, TImplementation>());
     }
 
     /// <inheritdoc/>

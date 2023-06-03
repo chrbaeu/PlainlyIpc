@@ -16,7 +16,7 @@ internal class NamedPipeIpcDemo
         {
             var myAddress = $"np-ipc-chat";
             Console.WriteLine($"Server name/address: {myAddress}");
-            ipcHandler = await ipcFactory.CreateNampedPipeIpcServer(myAddress);
+            ipcHandler = await ipcFactory.CreateNamedPipeIpcServer(myAddress);
             Console.WriteLine("Server is running ...");
         }
         else
@@ -24,7 +24,7 @@ internal class NamedPipeIpcDemo
             Console.WriteLine($"Enter server name/address:");
             var destAddress = Console.ReadLine() ?? "";
             Console.WriteLine($"Connecting to {destAddress} ...");
-            ipcHandler = await ipcFactory.CreateNampedPipeIpcClient(destAddress);
+            ipcHandler = await ipcFactory.CreateNamedPipeIpcClient(destAddress);
             Console.WriteLine("Client is connected ...");
         }
         ipcHandler.MessageReceived += (s, e) => Console.WriteLine(e.Value);

@@ -7,13 +7,12 @@ namespace PlainlyIpc.IPC;
 /// </summary>
 public sealed partial class IpcFactory
 {
-
     /// <summary>
     /// Creates a new named pipe server based IPC receiver.
     /// </summary>
     /// <param name="namedPipeName">The name of the named pipe.</param>
     /// <returns>The IPC receiver instance.</returns>
-    public Task<IIpcReceiver> CreateNampedPipeIpcReceiver(string namedPipeName)
+    public Task<IIpcReceiver> CreateNamedPipeIpcReceiver(string namedPipeName)
     {
         NamedPipeServer? namedPipeServer = null;
         IIpcReceiver? ipcReceiver = null;
@@ -33,11 +32,22 @@ public sealed partial class IpcFactory
     }
 
     /// <summary>
+    /// Creates a new named pipe server based IPC receiver.
+    /// </summary>
+    /// <param name="namedPipeName">The name of the named pipe.</param>
+    /// <returns>The IPC receiver instance.</returns>
+    [Obsolete("Use CreateNamedPipeIpcReceiver instead.")]
+    public Task<IIpcReceiver> CreateNampedPipeIpcReceiver(string namedPipeName)
+    {
+        return CreateNamedPipeIpcReceiver(namedPipeName);
+    }
+
+    /// <summary>
     /// Creates a new named pipe client based IPC sender.
     /// </summary>
     /// <param name="namedPipeName">The name of the named pipe.</param>
     /// <returns>The IPC sender instance.</returns>
-    public async Task<IIpcSender> CreateNampedPipeIpcSender(string namedPipeName)
+    public async Task<IIpcSender> CreateNamedPipeIpcSender(string namedPipeName)
     {
         NamedPipeClient? namedPipeClient = null;
         IIpcSender? ipcSender = null;
@@ -57,11 +67,22 @@ public sealed partial class IpcFactory
     }
 
     /// <summary>
+    /// Creates a new named pipe client based IPC sender.
+    /// </summary>
+    /// <param name="namedPipeName">The name of the named pipe.</param>
+    /// <returns>The IPC sender instance.</returns>
+    [Obsolete("Use CreateNamedPipeIpcSender instead.")]
+    public Task<IIpcSender> CreateNampedPipeIpcSender(string namedPipeName)
+    {
+        return CreateNamedPipeIpcSender(namedPipeName);
+    }
+
+    /// <summary>
     /// Creates a new named pipe server based IPC handler.
     /// </summary>
     /// <param name="namedPipeName">The name of the named pipe.</param>
     /// <returns>The IPC handler instance.</returns>
-    public Task<IIpcHandler> CreateNampedPipeIpcServer(string namedPipeName)
+    public Task<IIpcHandler> CreateNamedPipeIpcServer(string namedPipeName)
     {
         NamedPipeServer? namedPipeServer = null;
         IIpcHandler? ipcHandler = null;
@@ -81,11 +102,22 @@ public sealed partial class IpcFactory
     }
 
     /// <summary>
+    /// Creates a new named pipe server based IPC handler.
+    /// </summary>
+    /// <param name="namedPipeName">The name of the named pipe.</param>
+    /// <returns>The IPC handler instance.</returns>
+    [Obsolete("Use CreateNamedPipeIpcServer instead.")]
+    public Task<IIpcHandler> CreateNampedPipeIpcServer(string namedPipeName)
+    {
+        return CreateNamedPipeIpcServer(namedPipeName);
+    }
+
+    /// <summary>
     /// Creates a new named pipe client based IPC handler.
     /// </summary>
     /// <param name="namedPipeName">The name of the named pipe.</param>
     /// <returns>The IPC handler instance.</returns>
-    public async Task<IIpcHandler> CreateNampedPipeIpcClient(string namedPipeName)
+    public async Task<IIpcHandler> CreateNamedPipeIpcClient(string namedPipeName)
     {
         NamedPipeClient? namedPipeClient = null;
         IIpcHandler? ipcHandler = null;
@@ -102,6 +134,17 @@ public sealed partial class IpcFactory
             namedPipeClient?.Dispose();
             throw;
         }
+    }
+
+    /// <summary>
+    /// Creates a new named pipe client based IPC handler.
+    /// </summary>
+    /// <param name="namedPipeName">The name of the named pipe.</param>
+    /// <returns>The IPC handler instance.</returns>
+    [Obsolete("Use CreateNamedPipeIpcClient instead.")]
+    public Task<IIpcHandler> CreateNampedPipeIpcClient(string namedPipeName)
+    {
+        return CreateNamedPipeIpcClient(namedPipeName);
     }
 
 }

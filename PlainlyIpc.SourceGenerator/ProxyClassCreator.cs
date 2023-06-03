@@ -7,7 +7,7 @@ namespace PlainlyIpc.SourceGenerator;
 [Generator]
 public class ProxyClassCreator : ISourceGenerator
 {
-    private static SymbolDisplayFormat fullyQualifiedFormat = new(
+    private static readonly SymbolDisplayFormat fullyQualifiedFormat = new(
         globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
         typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
         genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,

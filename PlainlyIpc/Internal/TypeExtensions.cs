@@ -26,8 +26,8 @@ internal static class TypeExtensions
         var type = Type.GetType(match.Groups[2].Value);
         if (type is null)
         {
-            var assemplyFilterString = match.Groups[1].Value + ",";
-            bool predicate(Assembly x) => x.FullName?.StartsWith(assemplyFilterString, StringComparison.Ordinal) ?? false;
+            var assemblyFilterString = match.Groups[1].Value + ",";
+            bool predicate(Assembly x) => x.FullName?.StartsWith(assemblyFilterString, StringComparison.Ordinal) ?? false;
             var assembly = Array.Find(AppDomain.CurrentDomain.GetAssemblies(), predicate);
             if (assembly is null)
             {

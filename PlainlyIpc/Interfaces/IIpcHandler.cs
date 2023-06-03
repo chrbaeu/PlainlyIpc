@@ -3,7 +3,7 @@
 namespace PlainlyIpc.Interfaces;
 
 /// <summary>
-/// Interface for IPC handler implentations.
+/// Interface for IPC handler implementations.
 /// </summary>
 public interface IIpcHandler : IIpcSender, IIpcReceiver
 {
@@ -19,33 +19,33 @@ public interface IIpcHandler : IIpcSender, IIpcReceiver
     /// Registers a service.
     /// </summary>
     /// <typeparam name="TIService">The type of the service.</typeparam>
-    /// <param name="service">The service isntance.</param>
+    /// <param name="service">The service instance.</param>
     void RegisterService<TIService>(TIService service) where TIService : notnull;
 
     /// <summary>
     /// Executes a async remote procedure call.
     /// </summary>
-    /// <typeparam name="TIRemnoteService">The type of the remote interface.</typeparam>
+    /// <typeparam name="TIRemoteService">The type of the remote interface.</typeparam>
     /// <typeparam name="TResult">The type of the expected result.</typeparam>
     /// <param name="func">The function to call.</param>
     /// <returns>The result.</returns>
-    Task<TResult> ExecuteRemote<TIRemnoteService, TResult>(Expression<Func<TIRemnoteService, Task<TResult>>> func);
+    Task<TResult> ExecuteRemote<TIRemoteService, TResult>(Expression<Func<TIRemoteService, Task<TResult>>> func);
 
     /// <summary>
     /// Executes a remote procedure call.
     /// </summary>
-    /// <typeparam name="TIRemnoteService">The type of the remote interface.</typeparam>
+    /// <typeparam name="TIRemoteService">The type of the remote interface.</typeparam>
     /// <typeparam name="TResult">The type of the expected result.</typeparam>
     /// <param name="func">The function to call.</param>
     /// <returns>The result.</returns>
-    Task<TResult> ExecuteRemote<TIRemnoteService, TResult>(Expression<Func<TIRemnoteService, TResult>> func);
+    Task<TResult> ExecuteRemote<TIRemoteService, TResult>(Expression<Func<TIRemoteService, TResult>> func);
 
 
     /// <summary>
     /// Executes a remote procedure call.
     /// </summary>
-    /// <typeparam name="TIRemnoteService">The type of the remote interface.</typeparam>
+    /// <typeparam name="TIRemoteService">The type of the remote interface.</typeparam>
     /// <param name="func">The function to call.</param>
-    Task ExecuteRemote<TIRemnoteService>(Expression<Action<TIRemnoteService>> func);
+    Task ExecuteRemote<TIRemoteService>(Expression<Action<TIRemoteService>> func);
 
 }

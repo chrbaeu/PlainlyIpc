@@ -93,7 +93,7 @@ internal sealed class NamedPipeServer : IDataHandler, IDisposable
             {
                 await server.WaitForConnectionAsync(cancellationTokenSource.Token).ConfigureAwait(false);
                 IsConnected = true;
-                await AcceptIncommingData().ConfigureAwait(false);
+                await AcceptIncomingData().ConfigureAwait(false);
                 if (IsActive)
                 {
 #if NETSTANDARD2_0
@@ -117,7 +117,7 @@ internal sealed class NamedPipeServer : IDataHandler, IDisposable
         }
     }
 
-    private async Task AcceptIncommingData()
+    private async Task AcceptIncomingData()
     {
         try
         {

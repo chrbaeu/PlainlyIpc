@@ -56,7 +56,7 @@ internal sealed class ManagedTcpListener : IDisposable
     /// <summary>
     /// Start asynchrone listening for connections.
     /// </summary>
-    public Task StartListenAync(int? backlog = null)
+    public Task StartListenAsync(int? backlog = null)
     {
         if (isDisposed) { throw new ObjectDisposedException(nameof(ManagedTcpListener)); }
         if (IsListening) { return Task.CompletedTask; }
@@ -64,6 +64,12 @@ internal sealed class ManagedTcpListener : IDisposable
         IsListening = true;
         return Task.Run(WaitForClient);
     }
+
+    /// <summary>
+    /// Start asynchrone listening for connections.
+    /// </summary>
+    [Obsolete("Use StartListenAsync instead.")]
+    public Task StartListenAync(int? backlog = null) => StartListenAsync(backlog);
 
     /// <summary>
     /// Stop listening for new clients.

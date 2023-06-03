@@ -104,27 +104,27 @@ public sealed class IpcHandler : IIpcHandler
     }
 
     /// <inheritdoc/>
-    public async Task<TResult> ExecuteRemote<TIRemnoteService, TResult>(Expression<Func<TIRemnoteService, Task<TResult>>> func)
+    public async Task<TResult> ExecuteRemote<TIRemoteService, TResult>(Expression<Func<TIRemoteService, Task<TResult>>> func)
     {
         if (isDisposed) { throw new ObjectDisposedException(nameof(IpcHandler)); }
         if (func is null) { throw new ArgumentNullException(nameof(func)); }
-        return await ExecuteRemote<TIRemnoteService, TResult>((Expression)func).ConfigureAwait(false);
+        return await ExecuteRemote<TIRemoteService, TResult>((Expression)func).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public async Task<TResult> ExecuteRemote<TIRemnoteService, TResult>(Expression<Func<TIRemnoteService, TResult>> func)
+    public async Task<TResult> ExecuteRemote<TIRemoteService, TResult>(Expression<Func<TIRemoteService, TResult>> func)
     {
         if (isDisposed) { throw new ObjectDisposedException(nameof(IpcHandler)); }
         if (func is null) { throw new ArgumentNullException(nameof(func)); }
-        return await ExecuteRemote<TIRemnoteService, TResult>((Expression)func).ConfigureAwait(false);
+        return await ExecuteRemote<TIRemoteService, TResult>((Expression)func).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public async Task ExecuteRemote<TIRemnoteService>(Expression<Action<TIRemnoteService>> func)
+    public async Task ExecuteRemote<TIRemoteService>(Expression<Action<TIRemoteService>> func)
     {
         if (isDisposed) { throw new ObjectDisposedException(nameof(IpcHandler)); }
         if (func is null) { throw new ArgumentNullException(nameof(func)); }
-        await ExecuteRemote<TIRemnoteService, object>((Expression)func).ConfigureAwait(false);
+        await ExecuteRemote<TIRemoteService, object>((Expression)func).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -154,7 +154,7 @@ public sealed class IpcHandler : IIpcHandler
         tcsDict.Add(remoteCall.Uuid, resultTcs);
         Debug.WriteLine("#>ExecuteRemote>SendCall");
         await ipcSender.SendRemoteMessageAsync(remoteCall.AsBytes()).ConfigureAwait(false);
-        Debug.WriteLine("#>ExecuteRemote>Call sended");
+        Debug.WriteLine("#>ExecuteRemote>Call sent");
         try
         {
             Debug.WriteLine("#>ExecuteRemote>Wait for result");

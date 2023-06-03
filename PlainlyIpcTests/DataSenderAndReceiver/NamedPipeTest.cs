@@ -9,7 +9,7 @@ public class NamedPipeTest
     private readonly TaskCompletionSource<bool> tsc = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     [Fact]
-    public async Task SendAndReciveData()
+    public async Task SendAndReceiveData()
     {
         using NamedPipeServer server = new(namedPipeName);
         server.DataReceived += (object? sender, DataReceivedEventArgs e) =>

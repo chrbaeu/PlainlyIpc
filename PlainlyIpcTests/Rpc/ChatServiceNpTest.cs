@@ -10,7 +10,7 @@ public class ChatServiceNpTest
     [Fact]
     public async Task SendMessageTest()
     {
-        using IIpcHandler handlerS = await ipcFactory.CreateNampedPipeIpcServer(namedPipeName);
+        using IIpcHandler handlerS = await ipcFactory.CreateNamedPipeIpcServer(namedPipeName);
         handlerS.ErrorOccurred += (sender, e) =>
         {
             tsc.TrySetResult(false);
@@ -21,7 +21,7 @@ public class ChatServiceNpTest
             tsc.SetResult(true);
         }));
 
-        using IIpcHandler handlerC = await ipcFactory.CreateNampedPipeIpcClient(namedPipeName);
+        using IIpcHandler handlerC = await ipcFactory.CreateNamedPipeIpcClient(namedPipeName);
         await handlerC.ExecuteRemote<IChatService>(x => x.SendMessage(TestData.Text));
 
         var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 5));
