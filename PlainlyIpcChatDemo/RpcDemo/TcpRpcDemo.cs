@@ -3,7 +3,7 @@ using System.Net;
 
 namespace PlainlyIpcChatDemo.RpcDemo;
 
-internal class TcpRpcDemo
+internal static class TcpRpcDemo
 {
     /// <summary>
     /// Demo for a simple TCP based RPC chat.

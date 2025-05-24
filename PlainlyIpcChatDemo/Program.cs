@@ -1,9 +1,9 @@
-﻿using PlainlyIpcChatDemo.IpcDemp;
+﻿using PlainlyIpcChatDemo.IpcDemo;
 using PlainlyIpcChatDemo.RpcDemo;
 
 namespace PlainlyIpcChatDemo;
 
-internal class Program
+internal static class Program
 {
     public static async Task Main(string[] args)
     {

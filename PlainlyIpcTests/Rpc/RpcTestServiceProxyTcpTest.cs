@@ -78,7 +78,7 @@ public class RpcTestServiceProxyTcpTest : IAsyncLifetime
     [Fact]
     public async Task AsyncFunctionsTest()
     {
-        var sumResult = await proxy.Sum(new int[] { 4, 5 });
+        var sumResult = await proxy.Sum([4, 5]);
         sumResult.Should().Be(9);
 
         await proxy.GetTask();

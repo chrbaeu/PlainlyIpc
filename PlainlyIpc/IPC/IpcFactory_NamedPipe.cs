@@ -32,17 +32,6 @@ public sealed partial class IpcFactory
     }
 
     /// <summary>
-    /// Creates a new named pipe server based IPC receiver.
-    /// </summary>
-    /// <param name="namedPipeName">The name of the named pipe.</param>
-    /// <returns>The IPC receiver instance.</returns>
-    [Obsolete("Use CreateNamedPipeIpcReceiver instead.")]
-    public Task<IIpcReceiver> CreateNampedPipeIpcReceiver(string namedPipeName)
-    {
-        return CreateNamedPipeIpcReceiver(namedPipeName);
-    }
-
-    /// <summary>
     /// Creates a new named pipe client based IPC sender.
     /// </summary>
     /// <param name="namedPipeName">The name of the named pipe.</param>

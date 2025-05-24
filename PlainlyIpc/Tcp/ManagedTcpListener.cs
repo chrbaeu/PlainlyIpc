@@ -66,12 +66,6 @@ internal sealed class ManagedTcpListener : IDisposable
     }
 
     /// <summary>
-    /// Start asynchrone listening for connections.
-    /// </summary>
-    [Obsolete("Use StartListenAsync instead.")]
-    public Task StartListenAync(int? backlog = null) => StartListenAsync(backlog);
-
-    /// <summary>
     /// Stop listening for new clients.
     /// </summary>
     public void Stop()

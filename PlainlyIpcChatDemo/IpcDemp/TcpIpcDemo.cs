@@ -1,8 +1,8 @@
 ﻿using System.Net;
 
-namespace PlainlyIpcChatDemo.IpcDemp;
+namespace PlainlyIpcChatDemo.IpcDemo;
 
-internal class TcpIpcDemo
+internal static class TcpIpcDemo
 {
     /// <summary>
     /// Demo for a simple TCP based IPC chat.

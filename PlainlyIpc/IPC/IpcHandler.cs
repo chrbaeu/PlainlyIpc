@@ -9,8 +9,8 @@ namespace PlainlyIpc.IPC;
 /// </summary>
 public sealed class IpcHandler : IIpcHandler
 {
-    private readonly Dictionary<Guid, TaskCompletionSource<RemoteResult>> tcsDict = new();
-    private readonly Dictionary<Type, object> serviceDict = new();
+    private readonly Dictionary<Guid, TaskCompletionSource<RemoteResult>> tcsDict = [];
+    private readonly Dictionary<Type, object> serviceDict = [];
     private readonly IpcSender ipcSender;
     private readonly IpcReceiver ipcReceiver;
     private readonly IObjectConverter objectConverter;

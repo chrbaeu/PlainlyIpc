@@ -51,7 +51,7 @@ internal static class TypeExtensions
         var loadedAssemblies = new HashSet<string>();
         var assembliesToCheck = new Queue<Assembly>();
         assembliesToCheck.Enqueue(Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly());
-        while (assembliesToCheck.Any())
+        while (assembliesToCheck.Count > 0)
         {
             var assemblyToCheck = assembliesToCheck.Dequeue();
             foreach (var reference in assemblyToCheck.GetReferencedAssemblies())
@@ -70,7 +70,7 @@ internal static class TypeExtensions
 
     private static List<string> SplitGenericTypeArguments(string genericArguments)
     {
-        List<string> typeArguments = new();
+        List<string> typeArguments = [];
         int markers = 0, lastIndex = 0;
         for (var i = 0; i < genericArguments.Length; i++)
         {

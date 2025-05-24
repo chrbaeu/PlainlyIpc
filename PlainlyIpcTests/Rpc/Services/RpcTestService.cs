@@ -2,7 +2,7 @@
 
 namespace PlainlyIpcTests.Rpc.Services;
 
-internal class RpcTestService : IRpcTestService
+internal sealed class RpcTestService : IRpcTestService
 {
     public int Add(int a, int b) => a + b;
     public void NoResultOp(int x) => Debug.WriteLine(x);

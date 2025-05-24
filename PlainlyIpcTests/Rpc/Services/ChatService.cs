@@ -1,6 +1,6 @@
 ﻿namespace PlainlyIpcTests.Rpc.Services;
 
-internal class ChatService : IChatService
+internal sealed class ChatService : IChatService
 {
     private readonly Action<string> onMessageAction;
 

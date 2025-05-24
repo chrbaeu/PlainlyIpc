@@ -8,7 +8,7 @@ namespace PlainlyIpc.Tcp;
 internal sealed class ManagedTcpServer : IDataHandler
 {
     private readonly ManagedTcpListener tcpListener;
-    private readonly List<ManagedTcpClient> clients = new();
+    private readonly List<ManagedTcpClient> clients = [];
     private bool isDisposed;
 
     /// <inheritdoc/>

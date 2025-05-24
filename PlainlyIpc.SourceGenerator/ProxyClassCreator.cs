@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace PlainlyIpc.SourceGenerator;
 
 [Generator]
-public class ProxyClassCreator : ISourceGenerator
+public class ProxyClassCreator : IIncrementalGenerator
 {
     private static readonly SymbolDisplayFormat fullyQualifiedFormat = new(
         globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
@@ -14,9 +14,12 @@ public class ProxyClassCreator : ISourceGenerator
         miscellaneousOptions: SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers | SymbolDisplayMiscellaneousOptions.UseSpecialTypes
         );
 
-    public void Initialize(GeneratorInitializationContext context)
+    public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var source = """
+        // Register attribute source
+        context.RegisterPostInitializationOutput(ctx =>
+        {
+            var source = """
                 using System;
 
                 namespace PlainlyIpc.SourceGenerator
@@ -30,27 +33,31 @@ public class ProxyClassCreator : ISourceGenerator
                     }
                 }
                 """;
-        context.RegisterForPostInitialization((i) => i.AddSource("GenerateProxyAttribute.g.cs", source));
-        context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
-    }
+            ctx.AddSource("GenerateProxyAttribute.g.cs", source);
+        });
 
-    public void Execute(GeneratorExecutionContext context)
-    {
-        if (context.SyntaxReceiver is not SyntaxReceiver receiver || receiver.TypesToInspect.Count == 0) { return; }
+        // Register syntax provider for types with attributes
+        var typeDeclarations = context.SyntaxProvider
+            .CreateSyntaxProvider(
+                predicate: (node, _) => node is TypeDeclarationSyntax tds && tds.AttributeLists.Count > 0,
+                transform: (ctx, _) => (TypeDeclarationSyntax)ctx.Node)
+            .Where(tds => tds != null);
 
-        foreach (TypeDeclarationSyntax declarationSyntax in receiver.TypesToInspect)
+        var compilationAndTypes = context.CompilationProvider.Combine(typeDeclarations.Collect());
+
+        context.RegisterSourceOutput(compilationAndTypes, (spc, source) =>
         {
-            SemanticModel semanticModel = context.Compilation.GetSemanticModel(declarationSyntax.SyntaxTree);
-            INamedTypeSymbol? namedTypeSymbol = semanticModel.GetDeclaredSymbol(declarationSyntax, context.CancellationToken);
-
-            if (namedTypeSymbol is null) { continue; }
-            if (!namedTypeSymbol.GetAttributes().Select(x => x.AttributeClass?.Name).Any(x => x == "GenerateProxyAttribute" || x == "GenerateProxy")) { continue; }
-            if (namedTypeSymbol.IsStatic) { continue; }
-
-            var (className, sourceCode) = GenerateSourceCode(namedTypeSymbol, declarationSyntax is not InterfaceDeclarationSyntax);
-
-            context.AddSource($"{className}.g.cs", sourceCode);
-        }
+            var (compilation, typeDecls) = source;
+            foreach (var declarationSyntax in typeDecls)
+            {
+                var semanticModel = compilation.GetSemanticModel(declarationSyntax.SyntaxTree);
+                if (semanticModel.GetDeclaredSymbol(declarationSyntax, spc.CancellationToken) is not INamedTypeSymbol namedTypeSymbol) continue;
+                if (!namedTypeSymbol.GetAttributes().Select(x => x.AttributeClass?.Name).Any(x => x == "GenerateProxyAttribute" || x == "GenerateProxy")) continue;
+                if (namedTypeSymbol.IsStatic) continue;
+                var (className, sourceCode) = ProxyClassCreator.GenerateSourceCode(namedTypeSymbol, declarationSyntax is not InterfaceDeclarationSyntax);
+                spc.AddSource($"{className}.g.cs", sourceCode);
+            }
+        });
     }
 
     private static (string ClassName, string SourceCode) GenerateSourceCode(INamedTypeSymbol namedTypeSymbol, bool partialClassModel)
@@ -94,25 +101,4 @@ public class ProxyClassCreator : ISourceGenerator
     }
 
     private static string GetFullTypeString(ISymbol symbol) => symbol.ToDisplayString(fullyQualifiedFormat);
-
-    internal class SyntaxReceiver : ISyntaxReceiver
-    {
-        public List<TypeDeclarationSyntax> TypesToInspect { get; } = new();
-
-        public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
-        {
-            if (syntaxNode is not TypeDeclarationSyntax typeDeclarationSyntax) { return; }
-            if (typeDeclarationSyntax.AttributeLists.Count == 0) { return; }
-            switch (syntaxNode)
-            {
-                case ClassDeclarationSyntax classDeclarationSyntax:
-                    TypesToInspect.Add(classDeclarationSyntax);
-                    break;
-                case InterfaceDeclarationSyntax interfaceDeclarationSyntax:
-                    TypesToInspect.Add(interfaceDeclarationSyntax);
-                    break;
-            }
-        }
-    }
-
 }

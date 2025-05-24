@@ -58,7 +58,7 @@ public class RpcTestServiceNpTest : IAsyncLifetime
     [Fact]
     public async Task AsyncFunctionsTest()
     {
-        var sumResult = await client.ExecuteRemote<IRpcTestService, int>(x => x.Sum(new int[] { 4, 5 }));
+        var sumResult = await client.ExecuteRemote<IRpcTestService, int>(static x => x.Sum(new int[] { 4, 5 }));
         sumResult.Should().Be(9);
 
         await client.ExecuteRemote<IRpcTestService>(x => x.GetTask());

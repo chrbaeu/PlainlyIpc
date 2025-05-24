@@ -21,7 +21,7 @@ IIpcReceiver receiver = await ipcFactory.CreateTcpIpcReceiver(namedPipeName);
 IIpcSender sender = await ipcFactory.CreateTcpIpcSender(namedPipeName);
 ```
 
-Creatting `IpcHandler` instances based on named pipes or TCP:
+Creating `IpcHandler` instances based on named pipes or TCP:
 ```csharp
 // Named pipe
 IIpcHandler server = await ipcFactory.CreateNamedPipeIpcServer(namedPipeName);
@@ -72,7 +72,7 @@ Console.ReadKey();
 ```
 Additional usage examples can be found in the sample project "PlainlyIpcChatDemo" and the tests in the "PlainlyIpcTests" project.
 
-For the easier use of the ExecuteRemote functionality of the `IIpcHandler` you can create proxy classes for RPC interfaces autmatically.
+For the easier use of the ExecuteRemote functionality of the `IIpcHandler` you can create proxy classes for RPC interfaces automatically.
 
 With the `RemoteProxyCreator`:
 ```csharp
@@ -92,12 +92,12 @@ public partial class MyRemoteFuctionClass : IMyRemoteFunctionsInterface {
 
 > Warning: The source generator is still a prototype and has only a very rudimentary implementation.
 
-The basis for serialization and deserialization is the `IObjectConverter` interface. The defualt implementation ist the `System.Text.Json` based implementations for this interface.
+The basis for serialization and deserialization is the `IObjectConverter` interface. The default implementation is the `System.Text.Json` based implementation for this interface.
 ```csharp
 IObjectConverter objectConverter = new JsonObjectConverter();
 ```
 
-The library is developed mainly for ".net6.0" and newer but also supports ".netstandard2.0" and is designed for completely asynchronous IPC and RPC communication. Only the ".netstandard2.0" version has dependencies to other NuGet packages (The packages "System.Memory" and "System.Text.Json" are required to add some functionalities which were introduced in later .NET versions.).
+The library is developed mainly for ".net8.0" and newer but also supports ".netstandard2.0" and is designed for completely asynchronous IPC and RPC communication. Only the ".netstandard2.0" version has dependencies to other NuGet packages (The packages "System.Memory" and "System.Text.Json" are required to add some functionalities which were introduced in later .NET versions.).
 
 > Warning: PlainlyIPC is still under development. 
 >

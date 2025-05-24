@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace PlainlyIpcTests.Helper;
 
-internal class ConnectionAddressFactory
+internal sealed class ConnectionAddressFactory
 {
     private static volatile int portCounter;
 

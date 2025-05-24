@@ -8,19 +8,8 @@ namespace PlainlyIpc.Converter;
 /// </summary>
 public sealed class JsonObjectConverter : IObjectConverter
 {
-    private JsonSerializerOptions? jsonSerializerOptions;
-
-    /// <summary>
-    /// Registers an implementation for an interface to deserialize interface instances.
-    /// </summary>
-    /// <typeparam name="TInterface">The interface type.</typeparam>
-    /// <typeparam name="TImplementation">The type implementing the interface.</typeparam>
-    [Obsolete("Use AddInterfaceImplementation instead.")]
-    public void AddInterfaceImplentation<TInterface, TImplementation>()
-        where TImplementation : TInterface
-    {
-        AddInterfaceImplementation<TInterface, TImplementation>();
-    }
+    private readonly JsonSerializerOptions jsonSerializeOptions = new() { WriteIndented = true };
+    private JsonSerializerOptions? jsonDeserializeOptions;
 
     /// <summary>
     /// Registers an implementation for an interface to deserialize interface instances.
@@ -30,24 +19,23 @@ public sealed class JsonObjectConverter : IObjectConverter
     public void AddInterfaceImplementation<TInterface, TImplementation>()
         where TImplementation : TInterface
     {
-        jsonSerializerOptions ??= new JsonSerializerOptions();
-        jsonSerializerOptions.Converters.Add(new TypeMappingConverter<TInterface, TImplementation>());
+        jsonDeserializeOptions ??= new();
+        jsonDeserializeOptions.Converters.Add(new TypeMappingConverter<TInterface, TImplementation>());
     }
 
     /// <inheritdoc/>
     public byte[] Serialize<T>(T? data)
     {
-        var options = new JsonSerializerOptions { WriteIndented = true };
-        return JsonSerializer.SerializeToUtf8Bytes(data, options);
+        return JsonSerializer.SerializeToUtf8Bytes(data, jsonSerializeOptions);
     }
 
     /// <inheritdoc/>
     public T? Deserialize<T>(byte[] data)
     {
         if (data is null) { throw new ArgumentNullException(nameof(data)); }
-        if (jsonSerializerOptions is not null)
+        if (jsonDeserializeOptions is not null)
         {
-            return JsonSerializer.Deserialize<T>(data, jsonSerializerOptions);
+            return JsonSerializer.Deserialize<T>(data, jsonDeserializeOptions);
         }
         return JsonSerializer.Deserialize<T>(data);
     }
@@ -57,9 +45,9 @@ public sealed class JsonObjectConverter : IObjectConverter
     {
         if (data is null) { throw new ArgumentNullException(nameof(data)); }
         if (type is null) { throw new ArgumentNullException(nameof(type)); }
-        if (jsonSerializerOptions is not null)
+        if (jsonDeserializeOptions is not null)
         {
-            return JsonSerializer.Deserialize(data, type, jsonSerializerOptions);
+            return JsonSerializer.Deserialize(data, type, jsonDeserializeOptions);
         }
         return JsonSerializer.Deserialize(data, type);
     }

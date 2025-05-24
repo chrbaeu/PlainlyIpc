@@ -17,7 +17,11 @@ public static class RemoteProxyCreator
     {
         var type = typeof(TInterface);
         var className = $"{type.Name}RemoteProxy";
+#if NETSTANDARD
         if (className.StartsWith("I", StringComparison.Ordinal)) { className = className.Substring(1); }
+#else
+        if (className.StartsWith('I')) { className = className.Substring(1); }
+#endif
         return className;
     }
 

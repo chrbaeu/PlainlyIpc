@@ -1,6 +1,6 @@
-﻿namespace PlainlyIpcChatDemo.IpcDemp;
+﻿namespace PlainlyIpcChatDemo.IpcDemo;
 
-internal class NamedPipeIpcDemo
+internal static class NamedPipeIpcDemo
 {
     /// <summary>
     /// Demo for a simple named pipe based IPC chat.

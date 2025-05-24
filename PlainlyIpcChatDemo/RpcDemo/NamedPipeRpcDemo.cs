@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace PlainlyIpcChatDemo.RpcDemo;
 
-internal class NamedPipeRpcDemo
+internal static class NamedPipeRpcDemo
 {
     /// <summary>
     /// Demo for a simple named pipe based RPC chat.

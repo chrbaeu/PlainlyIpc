@@ -7,8 +7,8 @@ internal class RemoteProxyClassBuilder
     private readonly string interfaceType;
     private readonly bool isPartial;
     private readonly string accessibility;
-    private readonly List<string> usings = new();
-    private readonly List<string> methods = new();
+    private readonly List<string> usings = [];
+    private readonly List<string> methods = [];
 
     public RemoteProxyClassBuilder(string fullNamespace, string className, string interfaceType, bool isPartial, string accessibility)
     {
@@ -91,7 +91,7 @@ internal class RemoteProxyClassBuilder
     public override string ToString()
     {
         return $$"""
-            {{string.Join(Environment.NewLine, usings.Select(x => $"using {x};"))}}
+            {{string.Join("\n", usings.Select(x => $"using {x};"))}}
 
             namespace {{fullNamespace}} {
 
@@ -105,7 +105,7 @@ internal class RemoteProxyClassBuilder
                         this.ipcHandler = ipcHandler;
                     }
 
-            {{string.Join(Environment.NewLine + Environment.NewLine, methods)}}
+            {{string.Join("\n" + "\n", methods)}}
 
                 }
 

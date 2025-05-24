@@ -91,6 +91,7 @@ public class NamedPipeIpcHandlerTest
         Assert.False(handlerC.IsConnected);
 
         handlerC = await ipcFactory.CreateNamedPipeIpcClient(namedPipeName);
+        await Task.Delay(10);
         Assert.True(handlerS.IsConnected);
         Assert.True(handlerC.IsConnected);
         await handlerC.SendStringAsync(TestData.Text);
