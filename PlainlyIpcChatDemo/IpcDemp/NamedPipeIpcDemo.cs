@@ -16,7 +16,11 @@ internal static class NamedPipeIpcDemo
         {
             var myAddress = $"np-ipc-chat";
             Console.WriteLine($"Server name/address: {myAddress}");
+#if NET8_0_OR_GREATER
+            ipcHandler = await ipcFactory.CreateNamedPipeIpcServer(myAddress, null);
+#else
             ipcHandler = await ipcFactory.CreateNamedPipeIpcServer(myAddress);
+#endif
             Console.WriteLine("Server is running ...");
         }
         else

@@ -1,5 +1,8 @@
 ﻿using System.IO;
 using System.IO.Pipes;
+using System.Runtime.Versioning;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using System.Threading;
 
 namespace PlainlyIpc.NamedPipe;
@@ -41,6 +44,30 @@ internal sealed class NamedPipeServer : IDataHandler, IDisposable
         NamedPipeName = namedPipeName;
         server = new(namedPipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
     }
+
+#if NET8_0_OR_GREATER
+    /// <summary>
+    /// Creates a named pipe server for the given named pipe name.
+    /// </summary>
+    /// <param name="namedPipeName">Name of the named pipe.</param>
+    /// <param name="pipeSecurity">The security settings for the named pipe. If null, read and write access for the current user are applied.</param>
+    [SupportedOSPlatform("windows")]
+    public NamedPipeServer(string namedPipeName, PipeSecurity? pipeSecurity)
+    {
+        NamedPipeName = namedPipeName;
+        if (pipeSecurity is null)
+        {
+            WindowsIdentity identity = WindowsIdentity.GetCurrent();
+            if (identity.User is null)
+            {
+                throw new InvalidOperationException("Could not get the current user's identity for setting up the named pipe security.");
+            }
+            pipeSecurity = new();
+            pipeSecurity.AddAccessRule(new PipeAccessRule(identity.User, PipeAccessRights.ReadWrite | PipeAccessRights.CreateNewInstance, AccessControlType.Allow));
+        }
+        server = NamedPipeServerStreamAcl.Create(namedPipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous, 0, 0, pipeSecurity);
+    }
+#endif
 
     /// <summary>
     /// Starts the named pipe server instance.

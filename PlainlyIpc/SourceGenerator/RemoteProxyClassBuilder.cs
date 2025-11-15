@@ -25,7 +25,7 @@ internal class RemoteProxyClassBuilder
         usings.Add(interfaceNamespace);
     }
 
-    public void AddRemoteCall(string methodName, string returnType, IList<string> generics, IList<(string Type, string Name, bool IsParams)> parameters)
+    public void AddRemoteCall(string methodName, string returnType, IReadOnlyList<string> generics, IReadOnlyList<(string Type, string Name, bool IsParams)> parameters)
     {
         const string fullTaskName = "System.Threading.Tasks.Task";
         if (returnType == "System.Void") { returnType = "void"; }

@@ -87,6 +87,9 @@ internal sealed class ManagedTcpListener : IDisposable
         IsListening = false;
         cancellationTokenSource.Cancel();
         tcpListener.Stop();
+#if NET8_0_OR_GREATER
+        tcpListener.Dispose();
+#endif
         cancellationTokenSource.Dispose();
         ErrorOccurred = null;
     }

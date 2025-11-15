@@ -1,4 +1,6 @@
 ﻿using PlainlyIpc.NamedPipe;
+using System.IO.Pipes;
+using System.Runtime.Versioning;
 
 namespace PlainlyIpc.IPC;
 
@@ -65,6 +67,34 @@ public sealed partial class IpcFactory
     {
         return CreateNamedPipeIpcSender(namedPipeName);
     }
+
+#if NET8_0_OR_GREATER
+    /// <summary>
+    /// Creates a new named pipe server based IPC handler.
+    /// </summary>
+    /// <param name="namedPipeName">The name of the named pipe.</param>
+    /// <param name="pipeSecurity">The security settings for the named pipe. If null, read and write access for the current user are applied.</param>
+    /// <returns>The IPC handler instance.</returns>
+    [SupportedOSPlatform("windows")]
+    public Task<IIpcHandler> CreateNamedPipeIpcServer(string namedPipeName, PipeSecurity? pipeSecurity)
+    {
+        NamedPipeServer? namedPipeServer = null;
+        IIpcHandler? ipcHandler = null;
+        try
+        {
+            namedPipeServer = new(namedPipeName, pipeSecurity);
+            ipcHandler = new IpcHandler(namedPipeServer, objectConverter);
+            _ = namedPipeServer.StartAsync();
+            return Task.FromResult(ipcHandler);
+        }
+        catch
+        {
+            ipcHandler?.Dispose();
+            namedPipeServer?.Dispose();
+            throw;
+        }
+    }
+#endif
 
     /// <summary>
     /// Creates a new named pipe server based IPC handler.
