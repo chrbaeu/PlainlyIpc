@@ -2,26 +2,26 @@
 
 public class TypeExtensionsTests
 {
-    [Theory]
-    [InlineData(typeof(bool))]
-    [InlineData(typeof(int))]
-    [InlineData(typeof(string))]
-    [InlineData(typeof(int[]))]
-    [InlineData(typeof(int[][]))]
-    [InlineData(typeof(int[][][]))]
-    [InlineData(typeof((string, long)))]
-    [InlineData(typeof(List<int>))]
-    [InlineData(typeof(List<string>))]
-    [InlineData(typeof(List<(string, long)>))]
-    [InlineData(typeof(Dictionary<long, string>))]
-    [InlineData(typeof(Dictionary<long, string[]>))]
-    [InlineData(typeof(Dictionary<long, List<string>>))]
-    [InlineData(typeof(List<List<string[][]>>))]
-    public void TypeToStringAndBackTest(Type type)
+    [Test]
+    [Arguments(typeof(bool))]
+    [Arguments(typeof(int))]
+    [Arguments(typeof(string))]
+    [Arguments(typeof(int[]))]
+    [Arguments(typeof(int[][]))]
+    [Arguments(typeof(int[][][]))]
+    [Arguments(typeof((string, long)))]
+    [Arguments(typeof(List<int>))]
+    [Arguments(typeof(List<string>))]
+    [Arguments(typeof(List<(string, long)>))]
+    [Arguments(typeof(Dictionary<long, string>))]
+    [Arguments(typeof(Dictionary<long, string[]>))]
+    [Arguments(typeof(Dictionary<long, List<string>>))]
+    [Arguments(typeof(List<List<string[][]>>))]
+    public async Task TypeToStringAndBackTest(Type type)
     {
         var stringRepresentation = type.GetTypeString();
         var convertedType = PlainlyIpc.Internal.TypeExtensions.GetTypeFromTypeString(stringRepresentation);
-        convertedType.Should().Be(type);
-    }
 
+        await Assert.That(convertedType).IsEqualTo(type);
+    }
 }

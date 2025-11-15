@@ -2,12 +2,13 @@
 
 namespace PlainlyIpcTests.Rpc;
 
-public class RpcTestServiceNpTest : IAsyncLifetime
+public class RpcTestServiceNpTest
 {
     private readonly string namedPipeName = ConnectionAddressFactory.GetNamedPipeName();
     private IIpcHandler server = null!;
     private IIpcHandler client = null!;
 
+    [Before(Test)]
     public async Task InitializeAsync()
     {
         JsonObjectConverter converter = new();
@@ -18,6 +19,7 @@ public class RpcTestServiceNpTest : IAsyncLifetime
         client = await ipcFactory.CreateNamedPipeIpcClient(namedPipeName);
     }
 
+    [After(Test)]
     public Task DisposeAsync()
     {
         client?.Dispose();
@@ -25,60 +27,58 @@ public class RpcTestServiceNpTest : IAsyncLifetime
         return Task.CompletedTask;
     }
 
-    [Fact]
+    [Test]
     public async Task BasicFunctionsTest()
     {
         var addResult = await client.ExecuteRemote<IRpcTestService, int>(x => x.Add(4, 5));
-        addResult.Should().Be(9);
+        await Assert.That(addResult).IsEqualTo(9);
 
         await client.ExecuteRemote<IRpcTestService>(x => x.NoResultOp(4));
 
         var convertResult = await client.ExecuteRemote<IRpcTestService, IEnumerable<int>>(x => x.Convert(4, 5));
-        convertResult.Should().NotBeNullOrEmpty();
+        await Assert.That(convertResult).IsNotEmpty();
     }
 
-    [Fact]
+    [Test]
     public async Task GenericFunctionsTest()
     {
         var genericTextResult = await client.ExecuteRemote<IRpcTestService, string>(x => x.Generic(TestData.Text));
-        genericTextResult.Should().Be(TestData.Text);
+        await Assert.That(genericTextResult).IsEqualTo(TestData.Text);
 
         var genericDictResult = await client.ExecuteRemote<IRpcTestService, Dictionary<string, long>>(x => x.Generic(TestData.Dict));
-        genericDictResult.Should().BeEquivalentTo(TestData.Dict);
+        await Assert.That(genericDictResult).IsEquivalentTo(TestData.Dict);
 
         var genericModelResult = await client.ExecuteRemote<IRpcTestService, TestDataModel>(x => x.Generic(TestData.Model));
-        genericModelResult.Should().Be(TestData.Model);
+        await Assert.That(genericModelResult).IsEqualTo(TestData.Model);
 
         var guid = Guid.NewGuid();
         var genericGuidResult = await client.ExecuteRemote<IRpcTestService, Guid>(x => x.Generic(guid));
-        genericGuidResult.Should().Be(guid);
+        await Assert.That(genericGuidResult).IsEqualTo(guid);
     }
 
-
-    [Fact]
+    [Test]
     public async Task AsyncFunctionsTest()
     {
-        var sumResult = await client.ExecuteRemote<IRpcTestService, int>(static x => x.Sum(new int[] { 4, 5 }));
-        sumResult.Should().Be(9);
+        int[] values = [4, 5];
+        var sumResult = await client.ExecuteRemote<IRpcTestService, int>(x => x.Sum(values));
+        await Assert.That(sumResult).IsEqualTo(9);
 
         await client.ExecuteRemote<IRpcTestService>(x => x.GetTask());
     }
 
-    [Fact]
+    [Test]
     public async Task ExceptionsTest()
     {
-        await Assert.ThrowsAsync<RemoteException>(async () =>
+        await Assert.That(async () =>
         {
-            var result = await client.ExecuteRemote<IRpcTestService, int>(x => x.ThrowError(""));
-        });
+            _ = await client.ExecuteRemote<IRpcTestService, int>(x => x.ThrowError(""));
+        }).Throws<RemoteException>();
     }
 
-
-    [Fact]
+    [Test]
     public async Task InterfaceTest()
     {
         var result = await client.ExecuteRemote<IRpcTestService, ITestDataModel>(x => x.Roundtrip(TestData.Model));
-        result.Should().Be(TestData.Model);
+        await Assert.That(result).IsEqualTo(TestData.Model);
     }
-
 }

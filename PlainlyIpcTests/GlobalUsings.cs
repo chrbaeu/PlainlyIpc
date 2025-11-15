@@ -1,5 +1,4 @@
-﻿global using FluentAssertions;
-global using PlainlyIpc.Converter;
+﻿global using PlainlyIpc.Converter;
 global using PlainlyIpc.Enums;
 global using PlainlyIpc.EventArgs;
 global using PlainlyIpc.Exceptions;
@@ -12,4 +11,7 @@ global using System.Collections.Generic;
 global using System.Linq;
 global using System.Text;
 global using System.Threading.Tasks;
-global using Xunit;
+global using TUnit.Assertions;
+global using TUnit.Assertions.Extensions;
+global using TUnit.Core;
+

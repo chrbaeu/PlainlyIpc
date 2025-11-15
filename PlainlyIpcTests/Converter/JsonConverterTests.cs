@@ -4,46 +4,54 @@ public class JsonConverterTests
 {
     private readonly JsonObjectConverter converter = new();
 
-    [Fact]
-    public void StringTest()
+    [Test]
+    public async Task StringTest()
     {
-        ObjectSerializationDeserializationBaseTest(converter, TestData.Text);
+        await ObjectSerializationDeserializationBaseTest(converter, TestData.Text);
     }
 
-    [Fact]
-    public void ModelTest()
+    [Test]
+    public async Task ModelTest()
     {
-        ObjectSerializationDeserializationBaseTest(converter, TestData.Model);
+        await ObjectSerializationDeserializationBaseTest(converter, TestData.Model);
     }
 
-    [Fact]
-    public void InterfacesTest()
+    [Test]
+    public async Task InterfacesTest()
     {
         converter.AddInterfaceImplementation<ITestDataModel, TestDataModel>();
+
         byte[] serialized = converter.Serialize(TestData.TestDataModels);
+
         List<TestDataModel>? deserialized = converter.Deserialize<List<TestDataModel>>(serialized);
-        deserialized.Should().BeEquivalentTo(TestData.TestDataModels);
+        await Assert.That(deserialized).IsEquivalentTo(TestData.TestDataModels);
+
         deserialized = converter.Deserialize(serialized, typeof(List<TestDataModel>)) as List<TestDataModel>;
-        deserialized.Should().BeEquivalentTo(TestData.TestDataModels);
+        await Assert.That(deserialized).IsEquivalentTo(TestData.TestDataModels);
     }
 
-    [Fact]
-    public void DictionaryTest()
+    [Test]
+    public async Task DictionaryTest()
     {
         byte[] serialized = converter.Serialize(TestData.Dict);
+
         Dictionary<string, long>? deserialized = converter.Deserialize<Dictionary<string, long>>(serialized);
-        deserialized.Should().BeEquivalentTo(TestData.Dict);
+        await Assert.That(deserialized).IsEquivalentTo(TestData.Dict);
+
         deserialized = converter.Deserialize(serialized, typeof(Dictionary<string, long>)) as Dictionary<string, long>;
-        deserialized.Should().BeEquivalentTo(TestData.Dict);
+        await Assert.That(deserialized).IsEquivalentTo(TestData.Dict);
     }
 
-    private static void ObjectSerializationDeserializationBaseTest<T>(IObjectConverter converter, T data) where T : class
+    private static async Task ObjectSerializationDeserializationBaseTest<T>(
+        IObjectConverter converter,
+        T data) where T : class
     {
         byte[] serialized = converter.Serialize(data);
-        T? deserialized = converter.Deserialize<T>(serialized);
-        deserialized.Should().Be(data);
-        deserialized = converter.Deserialize(serialized, typeof(T)) as T;
-        deserialized.Should().Be(data);
-    }
 
+        T? deserialized = converter.Deserialize<T>(serialized);
+        await Assert.That(deserialized).IsEqualTo(data);
+
+        deserialized = converter.Deserialize(serialized, typeof(T)) as T;
+        await Assert.That(deserialized).IsEqualTo(data);
+    }
 }

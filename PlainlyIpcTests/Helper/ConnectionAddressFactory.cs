@@ -1,16 +1,18 @@
 ﻿using System.Net;
-using System.Threading;
 
 namespace PlainlyIpcTests.Helper;
 
-internal sealed class ConnectionAddressFactory
+internal static class ConnectionAddressFactory
 {
-    private static volatile int portCounter;
+    private static object lockObject = new();
+    private static int portCounter;
 
     public static IPEndPoint GetIpEndPoint()
     {
-        Interlocked.Increment(ref portCounter);
-        return new(IPAddress.Loopback, 60500 + portCounter++);
+        lock (lockObject)
+        {
+            return new(IPAddress.Loopback, 60500 + portCounter++);
+        }
     }
 
     public static string GetNamedPipeName()

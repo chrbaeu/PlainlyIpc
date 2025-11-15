@@ -1,5 +1,4 @@
 ﻿using PlainlyIpc.NamedPipe;
-using System.IO;
 
 namespace PlainlyIpcTests.NamedPipe;
 
@@ -8,13 +7,13 @@ public class NamedPipeTest
     private readonly string namedPipeName = ConnectionAddressFactory.GetNamedPipeName();
     private readonly TaskCompletionSource<bool> tsc = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-    [Fact]
+    [Test]
     public async Task SendAndReceiveData()
     {
         using NamedPipeServer server = new(namedPipeName);
-        server.DataReceived += (object? sender, DataReceivedEventArgs e) =>
+        server.DataReceived += async (object? sender, DataReceivedEventArgs e) =>
         {
-            e.Data.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(TestData.Text));
+            await Assert.That(e.Data).IsEquivalentTo(Encoding.UTF8.GetBytes(TestData.Text));
             tsc.SetResult(true);
         };
         var serverTask = Task.Run(() => server.StartAsync());
@@ -24,53 +23,58 @@ public class NamedPipeTest
 
         await client.SendAsync(Encoding.UTF8.GetBytes(TestData.Text));
 
-        var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 5));
+        var passed = await tsc.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
-        passed.Should().BeTrue();
+        await Assert.That(passed).IsTrue();
     }
 
-    [Fact]
-    public void NamedPipeInUseTest()
+    [Test]
+    public async Task NamedPipeInUseTest()
     {
         using NamedPipeServer server1 = new(namedPipeName);
-        Assert.Throws<IOException>(() =>
+
+        await Assert.That(async () =>
         {
             using NamedPipeServer server2 = new(namedPipeName);
-        });
+            await Task.CompletedTask;
+        }).Throws<IOException>();
     }
 
-    [Fact]
+    [Test]
     public async Task ConnectAndReconnectTest()
     {
+        TaskCompletionSource<ErrorOccurredEventArgs> errorTsc = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        TaskCompletionSource<string> resultTsc = new(TaskCreationOptions.RunContinuationsAsynchronously);
         using NamedPipeServer server = new(namedPipeName);
         server.DataReceived += (object? sender, DataReceivedEventArgs e) =>
         {
-            e.Data.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(TestData.Text));
-            tsc.SetResult(true);
+            resultTsc.SetResult(Encoding.UTF8.GetString(e.Data));
         };
         server.ErrorOccurred += (object? sender, ErrorOccurredEventArgs e) =>
         {
-            if (e.ErrorCode != ErrorEventCode.ConnectionLost) { Assert.Fail(e.Message); }
+            errorTsc.TrySetResult(e);
         };
         var serverTask = Task.Run(() => server.StartAsync());
 
         NamedPipeClient client = new(namedPipeName);
         await client.ConnectAsync();
+        await Task.Delay(100);
         client.Dispose();
 
-        await Task.Delay(10);
+        var erros = await errorTsc.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await Assert.That(erros.ErrorCode).IsEqualTo(ErrorEventCode.ConnectionLost);
 
         client = new(namedPipeName);
         await client.ConnectAsync();
         await client.SendAsync(Encoding.UTF8.GetBytes(TestData.Text));
         client.Dispose();
 
-        var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 5));
+        var result = await resultTsc.Task.WaitAsync(TimeSpan.FromSeconds(10));
 
-        passed.Should().BeTrue();
+        await Assert.That(result).IsEqualTo(TestData.Text);
     }
 
-    [Fact]
+    [Test]
     public async Task ServerFailedTest()
     {
         NamedPipeServer server = new(namedPipeName);
@@ -80,21 +84,22 @@ public class NamedPipeTest
 
         server.Dispose();
 
-        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        await RetryHelper.WaitUntilWithTimeoutAsync(() => client.IsConnected, false);
+
+        await Assert.That(async () =>
         {
             await client.SendAsync(Encoding.UTF8.GetBytes(TestData.Text));
-        });
+        }).Throws<InvalidOperationException>();
     }
 
-    [Fact]
+    [Test]
     public async Task NoServerTest()
     {
         using NamedPipeClient client = new(namedPipeName);
 
-        await Assert.ThrowsAsync<TimeoutException>(async () =>
+        await Assert.That(async () =>
         {
             await client.ConnectAsync(250);
-        });
+        }).Throws<TimeoutException>();
     }
-
 }

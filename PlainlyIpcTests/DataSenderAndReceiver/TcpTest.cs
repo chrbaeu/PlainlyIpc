@@ -9,7 +9,7 @@ public class TcpTest
     private readonly IPEndPoint ipEndPoint = ConnectionAddressFactory.GetIpEndPoint();
     private TaskCompletionSource<bool> tsc = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-    [Fact]
+    [Test]
     public async Task SendAndReceiveData()
     {
         using ManagedTcpListener server = new(ipEndPoint);
@@ -24,9 +24,9 @@ public class TcpTest
         var serverTask = Task.Run(() => server.StartListenAsync());
 
         using ManagedTcpClient client = new(ipEndPoint);
-        client.DataReceived += (object? sender, DataReceivedEventArgs e) =>
+        client.DataReceived += async (object? sender, DataReceivedEventArgs e) =>
         {
-            e.Data.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(TestData.Text));
+            await Assert.That(e.Data).IsEquivalentTo(Encoding.UTF8.GetBytes(TestData.Text));
             tsc.SetResult(true);
         };
         client.ErrorOccurred += (object? sender, ErrorOccurredEventArgs e) =>
@@ -37,24 +37,26 @@ public class TcpTest
         await Task.Delay(10);
         await client.ConnectAsync();
 
-        var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 5));
+        var passed = await tsc.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
-        passed.Should().BeTrue();
+        await Assert.That(passed).IsTrue();
     }
 
-    [Fact]
-    public void ServerPortInUseTest()
+    [Test]
+    public async Task ServerPortInUseTest()
     {
         using ManagedTcpListener server1 = new(ipEndPoint);
         _ = server1.StartListenAsync();
-        Assert.Throws<SocketException>(() =>
+
+        await Assert.That(async () =>
         {
             using ManagedTcpListener server2 = new(ipEndPoint);
             _ = server2.StartListenAsync();
-        });
+            await Task.CompletedTask;
+        }).Throws<SocketException>();
     }
 
-    [Fact]
+    [Test]
     public async Task ConnectAndReconnectTest()
     {
         using ManagedTcpListener server = new(ipEndPoint);
@@ -69,9 +71,9 @@ public class TcpTest
         var serverTask = Task.Run(() => server.StartListenAsync());
 
         ManagedTcpClient client = new(ipEndPoint);
-        client.DataReceived += (object? sender, DataReceivedEventArgs e) =>
+        client.DataReceived += async (object? sender, DataReceivedEventArgs e) =>
         {
-            e.Data.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(TestData.Text));
+            await Assert.That(e.Data).IsEquivalentTo(Encoding.UTF8.GetBytes(TestData.Text));
             tsc.SetResult(true);
         };
         client.ErrorOccurred += (object? sender, ErrorOccurredEventArgs e) =>
@@ -80,16 +82,16 @@ public class TcpTest
         };
         await client.ConnectAsync();
 
-        var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 5));
-        passed.Should().BeTrue();
+        var passed = await tsc.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await Assert.That(passed).IsTrue();
         client.Dispose();
 
-        tsc = new();
+        tsc = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         client = new(ipEndPoint);
-        client.DataReceived += (object? sender, DataReceivedEventArgs e) =>
+        client.DataReceived += async (object? sender, DataReceivedEventArgs e) =>
         {
-            e.Data.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(TestData.Text));
+            await Assert.That(e.Data).IsEquivalentTo(Encoding.UTF8.GetBytes(TestData.Text));
             tsc.SetResult(true);
         };
         client.ErrorOccurred += (object? sender, ErrorOccurredEventArgs e) =>
@@ -98,89 +100,97 @@ public class TcpTest
         };
         await client.ConnectAsync();
 
-        passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 5));
-        passed.Should().BeTrue();
+        passed = await tsc.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await Assert.That(passed).IsTrue();
         client.Dispose();
     }
 
-    [Fact]
+    [Test]
     public async Task ServerFailedTest()
     {
         using ManagedTcpListener server = new(ipEndPoint);
+        var errorTcsS = new TaskCompletionSource<ErrorEventCode>(TaskCreationOptions.RunContinuationsAsynchronously);
         server.IncomingTcpClient += (object? sender, IncomingTcpClientEventArgs e) =>
         {
             e.TcpClient.Dispose();
         };
         server.ErrorOccurred += (object? sender, ErrorOccurredEventArgs e) =>
         {
-            Assert.Fail(e.Message);
+            errorTcsS.TrySetResult(e.ErrorCode);
         };
         var serverTask = server.StartListenAsync();
 
         using ManagedTcpClient client = new(ipEndPoint);
+        var errorTcsC = new TaskCompletionSource<ErrorEventCode>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var dataReceived = false;
         client.DataReceived += (object? sender, DataReceivedEventArgs e) =>
         {
-            e.Data.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(TestData.Text));
+            dataReceived = true;
         };
         client.ErrorOccurred += (object? sender, ErrorOccurredEventArgs e) =>
         {
-            Assert.Equal(ErrorEventCode.ConnectionLost, e.ErrorCode);
+            errorTcsC.TrySetResult(e.ErrorCode);
         };
         await client.ConnectAsync();
 
-        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        await RetryHelper.WaitUntilWithTimeoutAsync(() => client.IsConnected, false);
+
+        await Assert.That(async () =>
         {
             await client.SendAsync(Encoding.UTF8.GetBytes(TestData.Text));
-        });
+        }).Throws<InvalidOperationException>();
+
+        var errorCode = await errorTcsC.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await Assert.That(errorCode).IsEqualTo(ErrorEventCode.ConnectionLost);
+        await Assert.That(dataReceived).IsFalse();
     }
 
-    [Fact]
+    [Test]
     public async Task NoServerTest()
     {
         using ManagedTcpClient client = new(ipEndPoint);
 
-        await Assert.ThrowsAsync<TimeoutException>(async () =>
+        await Assert.That(async () =>
         {
             await client.ConnectAsync(250);
-        });
+        }).Throws<TimeoutException>();
     }
 
-    [Fact]
-    public async Task StartAndStopSendAndReciveData()
+    [Test]
+    public async Task StartAndStopSendAndReceiveData()
     {
         using ManagedTcpListener server = new(ipEndPoint);
 
         var serverTask = server.StartListenAsync();
         server.Stop();
         await Task.Delay(10);
-        Assert.True(serverTask.IsCompleted);
+        await Assert.That(serverTask.IsCompleted).IsTrue();
 
-        server.IncomingTcpClient += async (sender, e) =>
+        server.IncomingTcpClient += async (object? sender, IncomingTcpClientEventArgs e) =>
         {
             await e.TcpClient.SendAsync(Encoding.UTF8.GetBytes(TestData.Text));
         };
-        server.ErrorOccurred += (sender, e) =>
+        server.ErrorOccurred += (object? sender, ErrorOccurredEventArgs e) =>
         {
             Assert.Fail(e.Message);
         };
         _ = server.StartListenAsync();
-        Assert.True(server.IsListening);
+        await Assert.That(server.IsListening).IsTrue();
 
         using ManagedTcpClient client = new(ipEndPoint);
-        client.DataReceived += (sender, e) =>
+        client.DataReceived += async (object? sender, DataReceivedEventArgs e) =>
         {
-            e.Data.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(TestData.Text));
+            await Assert.That(e.Data).IsEquivalentTo(Encoding.UTF8.GetBytes(TestData.Text));
             tsc.SetResult(true);
         };
-        client.ErrorOccurred += (sender, e) =>
+        client.ErrorOccurred += (object? sender, ErrorOccurredEventArgs e) =>
         {
             Assert.Fail(e.Message);
         };
         await client.ConnectAsync();
 
-        var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 5));
+        var passed = await tsc.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
-        passed.Should().BeTrue();
+        await Assert.That(passed).IsTrue();
     }
-
 }

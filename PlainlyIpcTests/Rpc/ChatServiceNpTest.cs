@@ -1,13 +1,14 @@
 ﻿using PlainlyIpcTests.Rpc.Services;
 
 namespace PlainlyIpcTests.Rpc;
+
 public class ChatServiceNpTest
 {
     private readonly string namedPipeName = ConnectionAddressFactory.GetNamedPipeName();
     private readonly IpcFactory ipcFactory = new();
     private readonly TaskCompletionSource<bool> tsc = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-    [Fact]
+    [Test]
     public async Task SendMessageTest()
     {
         using IIpcHandler handlerS = await ipcFactory.CreateNamedPipeIpcServer(namedPipeName);
@@ -15,17 +16,16 @@ public class ChatServiceNpTest
         {
             tsc.TrySetResult(false);
         };
-        handlerS.RegisterService<IChatService>(new ChatService(x =>
+        handlerS.RegisterService<IChatService>(new ChatService(async x =>
         {
-            x.Should().Be(TestData.Text);
+            await Assert.That(x).IsEqualTo(TestData.Text);
             tsc.SetResult(true);
         }));
 
         using IIpcHandler handlerC = await ipcFactory.CreateNamedPipeIpcClient(namedPipeName);
         await handlerC.ExecuteRemote<IChatService>(x => x.SendMessage(TestData.Text));
 
-        var passed = await tsc.Task.WaitAsync(new TimeSpan(0, 0, 5));
-        passed.Should().BeTrue();
+        var passed = await tsc.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await Assert.That(passed).IsTrue();
     }
-
 }
