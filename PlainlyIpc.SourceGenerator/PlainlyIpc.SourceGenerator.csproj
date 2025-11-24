@@ -9,7 +9,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Title>PlainlyIpc.SourceGenerator</Title>
     <PackageId>Chriffizient.PlainlyIpc.SourceGenerator</PackageId>
-    <Version>0.6.0</Version>
+    <Version>0.7.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>icon.png</PackageIcon>
     <Description>SourceGenerator for PlainlyIpc</Description>
@@ -22,6 +22,7 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <IsRoslynComponent>true</IsRoslynComponent>
+    <OutputItemType>Analyzer</OutputItemType>
   </PropertyGroup>
 
   <ItemGroup>
